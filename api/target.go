@@ -1,6 +1,10 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
 
 // View for targets
 type View struct {
@@ -12,20 +16,22 @@ type View struct {
 
 // MonitorRef is a reference to an existing monitor
 type MonitorRef struct {
-	MonitorId string      `json:"monitorId"`
+	MonitorID string      `json:"monitorId"`
 	Params    interface{} `json:"params"`
 }
 
 // Target full object
 type Target struct {
-	Id                string     `json:"id"`
-	Description       string     `json:"description"`
-	Url               string     `json:"url"`
-	View              View       `json:"view"`
+	ID                string     `json:"id" binding:"required"`
+	Description       string     `json:"description" binding:"required"`
+	URL               string     `json:"url"`
+	View              View       `json:"view" binding:"required"`
 	Status            int        `json:"status"`
 	StatusDescription string     `json:"statusDescription"`
 	Critical          bool       `json:"critical"`
 	Monitor           MonitorRef `json:"monitor"`
+	CreatedAt         time.Time  `json:"createdAt" time_format:"unix"`
+	UpdatedAt         time.Time  `json:"updatedAt" time_format:"unix"`
 }
 
 // Targets actions

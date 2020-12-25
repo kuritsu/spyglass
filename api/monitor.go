@@ -1,6 +1,16 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// TargetDefinition is the definition of a target
+type TargetDefinition struct {
+	TargetID string `json:"targetId"`
+}
 
 // DockerDefinition is a Docker task definition
 type DockerDefinition struct {
@@ -44,14 +54,15 @@ type MonitorDefinition struct {
 	K8SDefinition
 	ServerlessDefinition
 	ShellDefinition
+	TargetDefinition
 }
 
 // Monitor is a monitor definition for a target
 type Monitor struct {
-	Id         string            `json:"id"`
-	Type       string            `json:"type"`
-	Schedule   string            `json:"schedule"`
-	Definition MonitorDefinition `json:"definition"`
+	ID         string            `json:"id" binding:"required"`
+	Type       string            `json:"type" binding:"required"`
+	Schedule   string            `json:"schedule" binding:"required"`
+	Definition MonitorDefinition `json:"definition" binding:"required"`
 }
 
 // Monitors actions
@@ -61,5 +72,24 @@ type Monitors struct{}
 func (m Monitors) Get(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"hello": "you",
+	})
+}
+
+// Post a new monitor
+func (m Monitors) Post(c *gin.Context) {
+	var monitor Monitor
+	if er := c.ShouldBind(&monitor); er == nil {
+		log.Println(monitor.ID)
+		log.Println(monitor.Schedule)
+		log.Println(monitor.Type)
+		log.Println(monitor.Definition)
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": er.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"id": monitor.ID,
 	})
 }

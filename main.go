@@ -13,6 +13,7 @@ import (
 func main() {
 	switch os.Args[1] {
 	case "server":
-		api.Serve()
+		s := api.Serve()
+		s.Run()
 	}
 }
