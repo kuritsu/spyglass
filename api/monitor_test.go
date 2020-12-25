@@ -7,19 +7,23 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kuritsu/spyglass/api/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMonitorPost(t *testing.T) {
 	r := Serve()
 	w := httptest.NewRecorder()
-	monitor := Monitor{
+	monitor := types.Monitor{
 		ID:       "1",
 		Type:     "docker",
 		Schedule: "* * * * *",
-		Definition: MonitorDefinition{
-			DockerDefinition: DockerDefinition{
+		Definition: types.MonitorDefinition{
+			DockerDefinition: types.DockerDefinition{
 				Image: "nginx:latest",
+				DockerEnv: map[string]string{
+					"val1": "val2",
+				},
 			},
 		},
 	}

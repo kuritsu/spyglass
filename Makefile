@@ -1,3 +1,7 @@
+build:
+	golint ./...
+	go build
+
 get:
 	go get -v -t -d ./...
 
