@@ -15,19 +15,19 @@ type MonitorController struct {
 }
 
 // Initialize the controller
-func (m MonitorController) Initialize(db storage.Provider) {
+func (m *MonitorController) Initialize(db storage.Provider) {
 	m.db = db
 }
 
 // Get all monitors
-func (m MonitorController) Get(c *gin.Context) {
+func (m *MonitorController) Get(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"hello": "you",
 	})
 }
 
 // Post a new monitor
-func (m MonitorController) Post(c *gin.Context) {
+func (m *MonitorController) Post(c *gin.Context) {
 	var monitor types.Monitor
 	if er := c.ShouldBind(&monitor); er == nil {
 		log.Println(monitor.ID)
