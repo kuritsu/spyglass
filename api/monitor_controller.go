@@ -21,9 +21,24 @@ func (m *MonitorController) Initialize(db storage.Provider) {
 
 // Get all monitors
 func (m *MonitorController) Get(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"hello": "you",
-	})
+	id := c.Param("id")
+	m.db.Init()
+	defer m.db.Free()
+	monitor, err := m.db.GetMonitorByID(id)
+	switch {
+	case err != nil:
+		log.Println("ERROR: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal error. Try again.",
+		})
+		return
+	case monitor == nil:
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Monitor not found.",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, monitor)
 }
 
 // Post a new monitor

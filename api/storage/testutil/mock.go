@@ -10,7 +10,9 @@ import (
 // Mock is a mock for storage
 type Mock struct {
 	mock.Mock
-	InsertMonitorError error
+	GetMonitorByIDResult *types.Monitor
+	GetMonitorByIDError  error
+	InsertMonitorError   error
 }
 
 // Init with nothing
@@ -21,7 +23,7 @@ func (m *Mock) Free() {}
 
 // GetMonitorByID returns nothing
 func (m *Mock) GetMonitorByID(id string) (*types.Monitor, error) {
-	return nil, nil
+	return m.GetMonitorByIDResult, m.GetMonitorByIDError
 }
 
 // InsertMonitor in the db

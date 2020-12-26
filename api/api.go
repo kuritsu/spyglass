@@ -12,7 +12,7 @@ func Serve(db storage.Provider) *gin.Engine {
 	monitors := MonitorController{}
 	monitors.Initialize(db)
 	r.GET("/targets", targets.Get)
-	r.GET("/monitors", monitors.Get)
+	r.GET("/monitors/:id", monitors.Get)
 	r.POST("/monitors", monitors.Post)
 	return r
 }

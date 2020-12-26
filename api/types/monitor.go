@@ -2,52 +2,52 @@ package types
 
 // TargetDefinition is the definition of a target
 type TargetDefinition struct {
-	TargetID string `json:"targetId"`
+	TargetID string `json:"targetId" bson:",omitempty"`
 }
 
 // DockerDefinition is a Docker task definition
 type DockerDefinition struct {
-	Image      string            `json:"image"`
-	Entrypoint string            `json:"entrypoint"`
-	DockerEnv  map[string]string `json:"dockerEnv"`
+	Image      string            `json:"image" bson:",omitempty"`
+	Entrypoint string            `json:"entrypoint" bson:",omitempty"`
+	DockerEnv  map[string]string `json:"dockerEnv" bson:",omitempty"`
 }
 
 // K8SDefinition is a Kubernetes task definition
 type K8SDefinition struct {
-	DockerDefinition
+	DockerDefinition `bson:",omitempty"`
 }
 
 // AWSServerlessDefinition is an AWS Lambda Serverless definition
 type AWSServerlessDefinition struct {
-	LambdaArn string `json:"lambdaArn"`
-	Event     string `json:"event"`
+	LambdaArn string `json:"lambdaArn" bson:",omitempty"`
+	Event     string `json:"event" bson:",omitempty"`
 }
 
 // AzureServerlessDefinition is an Azure Function Serverless definition
 type AzureServerlessDefinition struct {
-	AzureFunc string `json:"azureFunc"`
-	Body      string `json:"body"`
+	AzureFunc string `json:"azureFunc" bson:",omitempty"`
+	Body      string `json:"body" bson:",omitempty"`
 }
 
 // ServerlessDefinition is a Serverless definition
 type ServerlessDefinition struct {
-	AWSServerlessDefinition
-	AzureServerlessDefinition
+	AWSServerlessDefinition   `bson:",omitempty"`
+	AzureServerlessDefinition `bson:",omitempty"`
 }
 
 // ShellDefinition is a Shell command definition
 type ShellDefinition struct {
-	Command string            `json:"command"`
-	Env     map[string]string `json:"env"`
+	Command string            `json:"command" bson:",omitempty"`
+	Env     map[string]string `json:"env" bson:",omitempty"`
 }
 
 // MonitorDefinition is a definition of a monitor
 type MonitorDefinition struct {
-	DockerDefinition
-	K8SDefinition
-	ServerlessDefinition
-	ShellDefinition
-	TargetDefinition
+	DockerDefinition     `bson:",omitempty"`
+	K8SDefinition        `bson:",omitempty"`
+	ServerlessDefinition `bson:",omitempty"`
+	ShellDefinition      `bson:",omitempty"`
+	TargetDefinition     `bson:",omitempty"`
 }
 
 // Monitor is a monitor definition for a target

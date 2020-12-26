@@ -86,9 +86,44 @@ func TestMonitorPostDbError(t *testing.T) {
 }
 
 func TestMonitorGet(t *testing.T) {
-	r := Serve(&testutil.Mock{})
+	dbMock := testutil.Mock{
+		GetMonitorByIDResult: &types.Monitor{
+			ID: "mymonitor",
+		},
+	}
+	r := Serve(&dbMock)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/monitors", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/monitors/mymonitor", nil)
 	r.ServeHTTP(w, req)
+
+	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
+	var monitor types.Monitor
+	fmt.Println(string(jsonBytes))
+	merr := json.Unmarshal(jsonBytes, &monitor)
+
 	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, nil, merr)
+	assert.Equal(t, "mymonitor", monitor.ID)
+}
+
+func TestMonitorGetNotFound(t *testing.T) {
+	dbMock := testutil.Mock{}
+	r := Serve(&dbMock)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/monitors/mymonitor", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestMonitorGetDbError(t *testing.T) {
+	dbMock := testutil.Mock{
+		GetMonitorByIDError: errors.New("Connection error"),
+	}
+	r := Serve(&dbMock)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/monitors/mymonitor", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }

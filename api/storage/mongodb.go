@@ -85,7 +85,16 @@ func (p *MongoDB) Free() {
 
 // GetMonitorByID returns a monitor by its ID.
 func (p *MongoDB) GetMonitorByID(id string) (*types.Monitor, error) {
-	return nil, nil
+	col := p.client.Database("spyglass").Collection("Monitors")
+	res := col.FindOne(p.context, bson.M{"id": id})
+	var monitor types.Monitor
+	err := res.Err()
+	if err == nil {
+		res.Decode(&monitor)
+	} else if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	return &monitor, err
 }
 
 // GetTargetByID returns a target by its ID.
