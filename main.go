@@ -10,7 +10,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func processArgs(db storage.Provider, s *gin.Engine) {
+func processArgs(s *gin.Engine) {
 	switch os.Args[1] {
 	case "server":
 		s.Run()
@@ -21,12 +21,11 @@ func processArgs(db storage.Provider, s *gin.Engine) {
 	All go programs start running from a function called main.
 */
 func main() {
-	app := fx.New(
+	fx.New(
 		fx.Provide(
 			storage.CreateProviderFromConf,
 			api.Serve,
 		),
 		fx.Invoke(processArgs),
 	)
-	app.Run()
 }

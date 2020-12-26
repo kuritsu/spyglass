@@ -17,7 +17,6 @@ type MonitorController struct {
 // Initialize the controller
 func (m MonitorController) Initialize(db storage.Provider) {
 	m.db = db
-	m.db.Initialize()
 }
 
 // Get all monitors
@@ -42,6 +41,7 @@ func (m MonitorController) Post(c *gin.Context) {
 		})
 		return
 	}
+	m.db.Initialize()
 	c.JSON(http.StatusCreated, gin.H{
 		"id": monitor.ID,
 	})
