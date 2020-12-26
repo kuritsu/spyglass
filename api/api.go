@@ -8,7 +8,7 @@ import (
 // Serve is the API host
 func Serve(db storage.Provider) *gin.Engine {
 	r := gin.Default()
-	targets := Targets{}
+	targets := TargetController{}
 	monitors := MonitorController{}
 	monitors.Initialize(db)
 	r.GET("/targets", targets.Get)

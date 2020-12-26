@@ -29,20 +29,21 @@ func (m *MonitorController) Get(c *gin.Context) {
 // Post a new monitor
 func (m *MonitorController) Post(c *gin.Context) {
 	var monitor types.Monitor
-	if er := c.ShouldBind(&monitor); er == nil {
-		log.Println(monitor.ID)
-		log.Println(monitor.Schedule)
-		log.Println(monitor.Type)
-		log.Println(monitor.Definition)
-		log.Println(monitor.Definition.DockerDefinition.DockerEnv)
-	} else {
+	if er := c.ShouldBind(&monitor); er != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": er.Error(),
 		})
 		return
 	}
-	m.db.Initialize()
-	c.JSON(http.StatusCreated, gin.H{
-		"id": monitor.ID,
-	})
+	m.db.Init()
+	defer m.db.Free()
+	_, err := m.db.InsertMonitor(&monitor)
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid operation. Try again.",
+		})
+		return
+	}
+	c.JSON(http.StatusCreated, monitor)
 }

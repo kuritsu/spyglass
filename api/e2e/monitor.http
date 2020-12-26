@@ -2,7 +2,7 @@ POST http://localhost:8080/monitors
 Content-Type: application/json
 
 {
-  "id": "mymonitor",
+  "id": "mymonitor2",
   "type": "docker",
   "schedule": "* * * * *",
   "definition": {

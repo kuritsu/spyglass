@@ -1,7 +1,5 @@
 package types
 
-import "time"
-
 // View for targets
 type View struct {
 	ImageBig   string `json:"imageBig"`
@@ -26,7 +24,5 @@ type Target struct {
 	StatusDescription string     `json:"statusDescription"`
 	Critical          bool       `json:"critical"`
 	Monitor           MonitorRef `json:"monitor"`
-	CreatedAt         time.Time  `json:"createdAt" time_format:"unix"`
-	UpdatedAt         time.Time  `json:"updatedAt" time_format:"unix"`
 	Permissions
 }
