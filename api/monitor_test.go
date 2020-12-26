@@ -7,12 +7,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kuritsu/spyglass/api/storage"
 	"github.com/kuritsu/spyglass/api/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMonitorPost(t *testing.T) {
-	r := Serve()
+	r := Serve(&storage.Mock{})
 	w := httptest.NewRecorder()
 	monitor := types.Monitor{
 		ID:       "1",
