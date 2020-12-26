@@ -35,3 +35,22 @@ func TestMonitorPost(t *testing.T) {
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusCreated, w.Code)
 }
+
+func TestMonitorPostInvalidMonitor(t *testing.T) {
+	r := Serve(&storage.Mock{})
+	w := httptest.NewRecorder()
+	jsonBody := "{}"
+	req, _ := http.NewRequest(http.MethodPost, "/monitors",
+		strings.NewReader(jsonBody))
+	req.Header.Add("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestMonitorGet(t *testing.T) {
+	r := Serve(&storage.Mock{})
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/monitors", nil)
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+}
