@@ -1,0 +1,15 @@
+POST http://localhost:8080/monitors
+Content-Type: application/json
+
+{
+  "id": "mymonitor",
+  "type": "docker",
+  "schedule": "* * * * *",
+  "definition": {
+    "image": "nginx:latest",
+    "dockerEnv": {
+      "var1": "var1",
+      "var2": "var2"
+    }
+  }
+}
