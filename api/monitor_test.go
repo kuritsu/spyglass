@@ -19,19 +19,7 @@ import (
 func TestMonitorPost(t *testing.T) {
 	r := Serve(&testutil.Mock{})
 	w := httptest.NewRecorder()
-	monitor := types.Monitor{
-		ID:       "1",
-		Type:     "docker",
-		Schedule: "* * * * *",
-		Definition: types.MonitorDefinition{
-			DockerDefinition: types.DockerDefinition{
-				Image: "nginx:latest",
-				DockerEnv: map[string]string{
-					"val1": "val2",
-				},
-			},
-		},
-	}
+	monitor := getValidMonitor()
 	jsonBody, _ := json.Marshal(monitor)
 	req, _ := http.NewRequest(http.MethodPost, "/monitors",
 		strings.NewReader(string(jsonBody)))
@@ -64,19 +52,7 @@ func TestMonitorPostDbError(t *testing.T) {
 	}
 	r := Serve(&dbMock)
 	w := httptest.NewRecorder()
-	monitor := types.Monitor{
-		ID:       "1",
-		Type:     "docker",
-		Schedule: "* * * * *",
-		Definition: types.MonitorDefinition{
-			DockerDefinition: types.DockerDefinition{
-				Image: "nginx:latest",
-				DockerEnv: map[string]string{
-					"val1": "val2",
-				},
-			},
-		},
-	}
+	monitor := getValidMonitor()
 	jsonBody, _ := json.Marshal(monitor)
 	req, _ := http.NewRequest(http.MethodPost, "/monitors",
 		strings.NewReader(string(jsonBody)))
@@ -126,4 +102,38 @@ func TestMonitorGetDbError(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestMonitorPostErrorDuplicate(t *testing.T) {
+	dbMock := testutil.Mock{
+		InsertMonitorError: errors.New("Duplicate"),
+	}
+	r := Serve(&dbMock)
+	w := httptest.NewRecorder()
+	monitor := getValidMonitor()
+	jsonBody, _ := json.Marshal(monitor)
+	req, _ := http.NewRequest(http.MethodPost, "/monitors",
+		strings.NewReader(string(jsonBody)))
+	req.Header.Add("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Duplicate monitor ID")
+}
+
+func getValidMonitor() *types.Monitor {
+	return &types.Monitor{
+		ID:       "1",
+		Type:     "docker",
+		Schedule: "* * * * *",
+		Definition: types.MonitorDefinition{
+			DockerDefinition: types.DockerDefinition{
+				Image: "nginx:latest",
+				DockerEnv: map[string]string{
+					"val1": "val2",
+				},
+			},
+		},
+	}
 }

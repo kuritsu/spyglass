@@ -109,7 +109,7 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 	_, err := p.client.Database("spyglass").Collection("Monitors").InsertOne(
 		p.context, monitor)
 	if err != nil {
-		log.Printf("Could not create Task: %v", err)
+		log.Printf("Could not create Monitor: %v", err)
 		return nil, err
 	}
 	return monitor, nil

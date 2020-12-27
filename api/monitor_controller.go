@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kuritsu/spyglass/api/storage"
@@ -55,6 +56,13 @@ func (m *MonitorController) Post(c *gin.Context) {
 	_, err := m.db.InsertMonitor(&monitor)
 	if err != nil {
 		log.Println(err.Error())
+		if strings.Contains(err.Error(), "duplicate") ||
+			strings.Contains(err.Error(), "Duplicate") {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Duplicate monitor ID.",
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Invalid operation. Try again.",
 		})
