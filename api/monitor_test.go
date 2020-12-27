@@ -122,9 +122,26 @@ func TestMonitorPostErrorDuplicate(t *testing.T) {
 	assert.Contains(t, string(jsonBytes), "Duplicate monitor ID")
 }
 
+func TestMonitorPostErrorInvalidID(t *testing.T) {
+	dbMock := testutil.Mock{}
+	r := Serve(&dbMock)
+	w := httptest.NewRecorder()
+	monitor := getValidMonitor()
+	monitor.ID = "/monitor"
+	jsonBody, _ := json.Marshal(monitor)
+	req, _ := http.NewRequest(http.MethodPost, "/monitors",
+		strings.NewReader(string(jsonBody)))
+	req.Header.Add("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid monitor ID")
+}
+
 func getValidMonitor() *types.Monitor {
 	return &types.Monitor{
-		ID:       "1",
+		ID:       "monitors.mymonitor-1",
 		Type:     "docker",
 		Schedule: "* * * * *",
 		Definition: types.MonitorDefinition{

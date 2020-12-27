@@ -2,14 +2,14 @@ package types
 
 // TargetDefinition is the definition of a target
 type TargetDefinition struct {
-	TargetID string `json:"targetId" bson:",omitempty"`
+	TargetID string `json:"targetId,omitempty" bson:",omitempty"`
 }
 
 // DockerDefinition is a Docker task definition
 type DockerDefinition struct {
-	Image      string            `json:"image" bson:",omitempty"`
-	Entrypoint string            `json:"entrypoint" bson:",omitempty"`
-	DockerEnv  map[string]string `json:"dockerEnv" bson:",omitempty"`
+	Image      string            `json:"image,omitempty" bson:",omitempty"`
+	Entrypoint string            `json:"entrypoint,omitempty" bson:",omitempty"`
+	DockerEnv  map[string]string `json:"dockerEnv,omitempty" bson:",omitempty"`
 }
 
 // K8SDefinition is a Kubernetes task definition
@@ -19,14 +19,14 @@ type K8SDefinition struct {
 
 // AWSServerlessDefinition is an AWS Lambda Serverless definition
 type AWSServerlessDefinition struct {
-	LambdaArn string `json:"lambdaArn" bson:",omitempty"`
-	Event     string `json:"event" bson:",omitempty"`
+	LambdaArn string `json:"lambdaArn,omitempty" bson:",omitempty"`
+	Event     string `json:"event,omitempty" bson:",omitempty"`
 }
 
 // AzureServerlessDefinition is an Azure Function Serverless definition
 type AzureServerlessDefinition struct {
-	AzureFunc string `json:"azureFunc" bson:",omitempty"`
-	Body      string `json:"body" bson:",omitempty"`
+	AzureFunc string `json:"azureFunc,omitempty" bson:",omitempty"`
+	Body      string `json:"body,omitempty" bson:",omitempty"`
 }
 
 // ServerlessDefinition is a Serverless definition
@@ -37,8 +37,8 @@ type ServerlessDefinition struct {
 
 // ShellDefinition is a Shell command definition
 type ShellDefinition struct {
-	Command string            `json:"command" bson:",omitempty"`
-	Env     map[string]string `json:"env" bson:",omitempty"`
+	Command string            `json:"command,omitempty" bson:",omitempty"`
+	Env     map[string]string `json:"env,omitempty" bson:",omitempty"`
 }
 
 // MonitorDefinition is a definition of a monitor

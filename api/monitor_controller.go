@@ -20,7 +20,7 @@ func (m *MonitorController) Initialize(db storage.Provider) {
 	m.db = db
 }
 
-// Get all monitors
+// Get a monitor by its Id
 func (m *MonitorController) Get(c *gin.Context) {
 	id := c.Param("id")
 	m.db.Init()
@@ -48,6 +48,12 @@ func (m *MonitorController) Post(c *gin.Context) {
 	if er := c.ShouldBind(&monitor); er != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": er.Error(),
+		})
+		return
+	}
+	if !IsValidID(monitor.ID) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid monitor ID.",
 		})
 		return
 	}
