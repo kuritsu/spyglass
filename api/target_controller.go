@@ -67,6 +67,13 @@ func (t *TargetController) Post(c *gin.Context) {
 		})
 		return
 	}
+	perr = t.monitorMissing(target.Monitor)
+	if perr != nil {
+		c.JSON(perr.Code, gin.H{
+			"message": perr.Error(),
+		})
+		return
+	}
 	_, err := t.db.InsertTarget(&target)
 	if err != nil {
 		log.Println(err.Error())
@@ -98,6 +105,23 @@ func (t *TargetController) parentMissing(childID string) *ErrorWithCode {
 	}
 	if parent == nil {
 		msg := fmt.Sprintf("Target parent does not exist. (%s)", parentID)
+		log.Println(msg)
+		return &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
+	}
+	return nil
+}
+
+func (t *TargetController) monitorMissing(monitorRef *types.MonitorRef) *ErrorWithCode {
+	if monitorRef == nil {
+		return nil
+	}
+	monitor, err := t.db.GetMonitorByID(monitorRef.MonitorID)
+	if err != nil {
+		log.Println(err.Error())
+		return &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}
+	}
+	if monitor == nil {
+		msg := fmt.Sprintf("Monitor does not exist. (%s)", monitorRef.MonitorID)
 		log.Println(msg)
 		return &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
 	}

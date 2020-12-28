@@ -3,78 +3,26 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/kuritsu/spyglass/api/storage/testutil"
+	"github.com/kuritsu/spyglass/api/testutil"
 	"github.com/kuritsu/spyglass/api/types"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMonitorPost(t *testing.T) {
-	r := Serve(&testutil.Mock{})
-	w := httptest.NewRecorder()
-	monitor := getValidMonitor()
-	jsonBody, _ := json.Marshal(monitor)
-	req, _ := http.NewRequest(http.MethodPost, "/monitors",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
-	var newMonitor types.Monitor
-	fmt.Println(string(jsonBytes))
-	json.Unmarshal(jsonBytes, &newMonitor)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
-	assert.NotEqual(t, time.Time{}, newMonitor.CreatedAt)
-}
-
-func TestMonitorPostInvalidMonitor(t *testing.T) {
-	r := Serve(&testutil.Mock{})
-	w := httptest.NewRecorder()
-	jsonBody := "{}"
-	req, _ := http.NewRequest(http.MethodPost, "/monitors",
-		strings.NewReader(jsonBody))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
-
-func TestMonitorPostDbError(t *testing.T) {
-	dbMock := testutil.Mock{
-		InsertMonitorError: errors.New("Connection error"),
-	}
-	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
-	monitor := getValidMonitor()
-	jsonBody, _ := json.Marshal(monitor)
-	req, _ := http.NewRequest(http.MethodPost, "/monitors",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-}
-
 func TestMonitorGet(t *testing.T) {
-	dbMock := testutil.Mock{
+	dbMock := testutil.StorageMock{
 		GetMonitorByIDResult: &types.Monitor{
 			ID: "mymonitor",
 		},
 	}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/monitors/mymonitor", nil)
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors/mymonitor", nil, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
 	var monitor types.Monitor
-	fmt.Println(string(jsonBytes))
 	merr := json.Unmarshal(jsonBytes, &monitor)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -83,60 +31,78 @@ func TestMonitorGet(t *testing.T) {
 }
 
 func TestMonitorGetNotFound(t *testing.T) {
-	dbMock := testutil.Mock{}
+	dbMock := testutil.StorageMock{}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/monitors/mymonitor", nil)
-	r.ServeHTTP(w, req)
+	w, _ := testutil.MakeRequest(http.MethodGet, "/monitors/mymonitor", nil, r)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestMonitorGetDbError(t *testing.T) {
-	dbMock := testutil.Mock{
+	dbMock := testutil.StorageMock{
 		GetMonitorByIDError: errors.New("Connection error"),
 	}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/monitors/mymonitor", nil)
-	r.ServeHTTP(w, req)
+	w, _ := testutil.MakeRequest(http.MethodGet, "/monitors/mymonitor", nil, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestMonitorPost(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	monitor := getValidMonitor()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
+
+	assertValidMonitorCreated(t, w, jsonBytes)
+}
+
+func TestMonitorPostInvalidMonitor(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	w, _ := testutil.MakeRequest(http.MethodPost, "/monitors", "", r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestMonitorPostDbError(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		InsertMonitorError: errors.New("Connection error"),
+	}
+	r := Serve(&dbMock)
+	monitor := getValidMonitor()
+	w, _ := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestMonitorPostErrorDuplicate(t *testing.T) {
-	dbMock := testutil.Mock{
+	dbMock := testutil.StorageMock{
 		InsertMonitorError: errors.New("Duplicate"),
 	}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
 	monitor := getValidMonitor()
-	jsonBody, _ := json.Marshal(monitor)
-	req, _ := http.NewRequest(http.MethodPost, "/monitors",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, string(jsonBytes), "Duplicate monitor ID")
 }
 
 func TestMonitorPostErrorInvalidID(t *testing.T) {
-	dbMock := testutil.Mock{}
-	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
+	r := Serve(&testutil.StorageMock{})
 	monitor := getValidMonitor()
 	monitor.ID = "/monitor"
-	jsonBody, _ := json.Marshal(monitor)
-	req, _ := http.NewRequest(http.MethodPost, "/monitors",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, string(jsonBytes), "Invalid monitor ID")
+}
+
+func assertValidMonitorCreated(t *testing.T, w *httptest.ResponseRecorder, jsonBytes []byte) {
+	var newMonitor types.Monitor
+	merr := json.Unmarshal(jsonBytes, &newMonitor)
+
+	assert.Equal(t, nil, merr)
+	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.NotEqual(t, time.Time{}, newMonitor.CreatedAt)
 }
 
 func getValidMonitor() *types.Monitor {

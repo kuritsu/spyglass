@@ -3,194 +3,169 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/kuritsu/spyglass/api/storage/testutil"
+	"github.com/kuritsu/spyglass/api/testutil"
 	"github.com/kuritsu/spyglass/api/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTargetGet(t *testing.T) {
-	dbMock := testutil.Mock{
+	dbMock := testutil.StorageMock{
 		GetTargetByIDResult: &types.Target{
 			ID: "mytarget",
 		},
 	}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/targets/mytarget", nil)
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets/mytarget", nil, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
-	var monitor types.Monitor
-	fmt.Println(string(jsonBytes))
-	merr := json.Unmarshal(jsonBytes, &monitor)
+	var target types.Target
+	merr := json.Unmarshal(jsonBytes, &target)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, nil, merr)
-	assert.Equal(t, "mytarget", monitor.ID)
+	assert.Equal(t, "mytarget", target.ID)
 }
 
 func TestTargetGetNotFound(t *testing.T) {
-	dbMock := testutil.Mock{}
-	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/targets/mytarget", nil)
-	r.ServeHTTP(w, req)
+	r := Serve(&testutil.StorageMock{})
+	w, _ := testutil.MakeRequest(http.MethodGet, "/targets/mytarget", nil, r)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestTargetGetDbError(t *testing.T) {
-	dbMock := testutil.Mock{
+	dbMock := testutil.StorageMock{
 		GetTargetByIDError: errors.New("Connection error"),
 	}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/targets/mytarget", nil)
-	r.ServeHTTP(w, req)
+	w, _ := testutil.MakeRequest(http.MethodGet, "/targets/mytarget", nil, r)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestTargetPost(t *testing.T) {
-	r := Serve(&testutil.Mock{})
-	w := httptest.NewRecorder()
+	r := Serve(&testutil.StorageMock{})
 	target := getValidTarget()
-	jsonBody, _ := json.Marshal(target)
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
-	var newTarget types.Target
-	json.Unmarshal(jsonBytes, &newTarget)
-
-	assert.Equal(t, http.StatusCreated, w.Code)
-	assert.NotEqual(t, time.Time{}, newTarget.CreatedAt)
+	assertValidTargetCreated(t, w, jsonBytes)
 }
 
 func TestTargetPostInvalidTarget(t *testing.T) {
-	r := Serve(&testutil.Mock{})
-	w := httptest.NewRecorder()
-	jsonBody := "{}"
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(jsonBody))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	r := Serve(&testutil.StorageMock{})
+	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", "", r)
+
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestTargetPostDbError(t *testing.T) {
-	dbMock := testutil.Mock{
+	dbMock := testutil.StorageMock{
 		InsertTargetError: errors.New("Connection error"),
 	}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
 	target := getValidTarget()
-	jsonBody, _ := json.Marshal(target)
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
+
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestTargetPostErrorDuplicate(t *testing.T) {
-	dbMock := testutil.Mock{
+	dbMock := testutil.StorageMock{
 		InsertTargetError: errors.New("Duplicate"),
 	}
 	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
 	target := getValidTarget()
-	jsonBody, _ := json.Marshal(target)
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, string(jsonBytes), "Duplicate target ID")
 }
 
 func TestTargetPostErrorInvalidID(t *testing.T) {
-	dbMock := testutil.Mock{}
-	r := Serve(&dbMock)
-	w := httptest.NewRecorder()
+	r := Serve(&testutil.StorageMock{})
 	target := getValidTarget()
 	target.ID = ".target/"
-	jsonBody, _ := json.Marshal(target)
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, string(jsonBytes), "Invalid target ID")
 }
 
 func TestTargetPostNoParentFoundError(t *testing.T) {
-	r := Serve(&testutil.Mock{})
-	w := httptest.NewRecorder()
+	r := Serve(&testutil.StorageMock{})
 	target := getValidTarget()
 	target.ID = "mytargets.target-1"
-	jsonBody, _ := json.Marshal(target)
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
-	fmt.Println(string(jsonBytes))
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, string(jsonBytes), "Target parent does not exist")
 }
 
 func TestTargetPostSearchingForParentError(t *testing.T) {
-	r := Serve(&testutil.Mock{
+	r := Serve(&testutil.StorageMock{
 		GetTargetByIDError: errors.New("Connection error"),
 	})
-	w := httptest.NewRecorder()
 	target := getValidTarget()
 	target.ID = "mytargets.target-1"
-	jsonBody, _ := json.Marshal(target)
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestTargetPostParentExists(t *testing.T) {
-	r := Serve(&testutil.Mock{
+	r := Serve(&testutil.StorageMock{
 		GetTargetByIDResult: &types.Target{
 			ID: "mytargets",
 		},
 	})
-	w := httptest.NewRecorder()
 	target := getValidTarget()
 	target.ID = "mytargets.target-1"
-	jsonBody, _ := json.Marshal(target)
-	req, _ := http.NewRequest(http.MethodPost, "/targets",
-		strings.NewReader(string(jsonBody)))
-	req.Header.Add("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
-	jsonBytes, _ := ioutil.ReadAll(w.Result().Body)
+	assertValidTargetCreated(t, w, jsonBytes)
+}
+
+func TestTargetPostMonitorDoesntExist(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	target := getValidTarget()
+	target.Monitor = &types.MonitorRef{MonitorID: "monitor1"}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Monitor does not exist")
+}
+
+func TestTargetPostGetMonitorHasDbError(t *testing.T) {
+	r := Serve(&testutil.StorageMock{
+		GetMonitorByIDError: errors.New("Connection error"),
+	})
+	target := getValidTarget()
+	target.Monitor = &types.MonitorRef{MonitorID: "monitor1"}
+	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestTargetPostMonitorExists(t *testing.T) {
+	r := Serve(&testutil.StorageMock{
+		GetMonitorByIDResult: &types.Monitor{ID: "monitor1"},
+	})
+	target := getValidTarget()
+	target.Monitor = &types.MonitorRef{MonitorID: "monitor1"}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
+
+	assertValidTargetCreated(t, w, jsonBytes)
+}
+
+func assertValidTargetCreated(t *testing.T, w *httptest.ResponseRecorder, jsonBytes []byte) {
 	var newTarget types.Target
-	json.Unmarshal(jsonBytes, &newTarget)
+	merr := json.Unmarshal(jsonBytes, &newTarget)
 
+	assert.Equal(t, nil, merr)
 	assert.Equal(t, http.StatusCreated, w.Code)
 	assert.NotEqual(t, time.Time{}, newTarget.CreatedAt)
 }
