@@ -1,0 +1,26 @@
+### Create parent target
+POST http://localhost:8080/targets
+Content-Type: application/json
+
+{
+  "id": "mytargets",
+  "description": "this is my parent target",
+  "monitor": {
+    "monitorId": "mymonitor"
+  }
+}
+
+### Create child target
+POST http://localhost:8080/targets
+Content-Type: application/json
+
+{
+  "id": "mytargets.mytarget-2",
+  "description": "this is my target",
+  "monitor": {
+    "monitorId": "mymonitor"
+  }
+}
+
+### Get the child target
+GET http://localhost:8080/targets/mytargets.mytarget-2

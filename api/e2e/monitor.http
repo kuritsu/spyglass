@@ -2,7 +2,7 @@ POST http://localhost:8080/monitors
 Content-Type: application/json
 
 {
-  "id": "mymonitor2",
+  "id": "mymonitors.mymonitor-2",
   "type": "docker",
   "schedule": "* * * * *",
   "definition": {
@@ -15,4 +15,4 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:8080/monitors/mymonitor2
+GET http://localhost:8080/monitors/mymonitors.mymonitor-2

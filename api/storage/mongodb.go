@@ -75,6 +75,15 @@ func (p *MongoDB) createIndexes() {
 	}
 	p.client.Database("spyglass").Collection("Monitors").
 		Indexes().CreateMany(p.context, monitorIndexes, nil)
+
+	targetIndexes := []mongo.IndexModel{
+		{
+			Keys:    bson.M{"id": 1},
+			Options: options.Index().SetUnique(true),
+		},
+	}
+	p.client.Database("spyglass").Collection("Targets").
+		Indexes().CreateMany(p.context, targetIndexes, nil)
 }
 
 // Free db connection
@@ -97,11 +106,6 @@ func (p *MongoDB) GetMonitorByID(id string) (*types.Monitor, error) {
 	return &monitor, err
 }
 
-// GetTargetByID returns a target by its ID.
-func (p *MongoDB) GetTargetByID(id string) (*types.Target, error) {
-	return nil, nil
-}
-
 // InsertMonitor into the db
 func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) {
 	monitor.CreatedAt = time.Now()
@@ -113,4 +117,31 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 		return nil, err
 	}
 	return monitor, nil
+}
+
+// GetTargetByID returns a target by its ID.
+func (p *MongoDB) GetTargetByID(id string) (*types.Target, error) {
+	col := p.client.Database("spyglass").Collection("Targets")
+	res := col.FindOne(p.context, bson.M{"id": id})
+	var target types.Target
+	err := res.Err()
+	if err == nil {
+		res.Decode(&target)
+	} else if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	return &target, err
+}
+
+// InsertTarget into the db.
+func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
+	target.CreatedAt = time.Now()
+	target.UpdatedAt = time.Now()
+	_, err := p.client.Database("spyglass").Collection("Targets").InsertOne(
+		p.context, target)
+	if err != nil {
+		log.Printf("Could not create Target: %v", err)
+		return nil, err
+	}
+	return target, nil
 }

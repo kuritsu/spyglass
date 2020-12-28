@@ -15,8 +15,8 @@ type MonitorController struct {
 	db storage.Provider
 }
 
-// Initialize the controller
-func (m *MonitorController) Initialize(db storage.Provider) {
+// Init -ialize the controller
+func (m *MonitorController) Init(db storage.Provider) {
 	m.db = db
 }
 

@@ -12,7 +12,10 @@ type Mock struct {
 	mock.Mock
 	GetMonitorByIDResult *types.Monitor
 	GetMonitorByIDError  error
+	GetTargetByIDResult  *types.Target
+	GetTargetByIDError   error
 	InsertMonitorError   error
+	InsertTargetError    error
 }
 
 // Init with nothing
@@ -34,5 +37,11 @@ func (m *Mock) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) {
 
 // GetTargetByID returns nothing
 func (m *Mock) GetTargetByID(id string) (*types.Target, error) {
-	return nil, nil
+	return m.GetTargetByIDResult, m.GetTargetByIDError
+}
+
+// InsertTarget into the db.
+func (m *Mock) InsertTarget(target *types.Target) (*types.Target, error) {
+	target.CreatedAt = time.Now()
+	return target, m.InsertTargetError
 }
