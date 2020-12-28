@@ -26,6 +26,7 @@ type Target struct {
 	StatusDescription string      `json:"statusDescription,omitempty" bson:",omitempty"`
 	Critical          bool        `json:"critical"`
 	Monitor           *MonitorRef `json:"monitor,omitempty" bson:",omitempty"`
+	Children          []Target    `json:"children,omitempty" bson:",omitempty"`
 	Permissions
 }
 
@@ -36,4 +37,10 @@ func GetTargetParentByID(id string) string {
 		return ""
 	}
 	return strings.Join(parts[0:len(parts)-1], ".")
+}
+
+// GetIDForRegex escapes special chars in the id for regex usage.
+func GetIDForRegex(id string) string {
+	id = strings.ToLower(id)
+	return strings.ReplaceAll(strings.ReplaceAll(id, ".", `\.`), "-", `\-`)
 }

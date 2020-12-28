@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/kuritsu/spyglass/api/types"
@@ -122,19 +123,38 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 // GetTargetByID returns a target by its ID.
 func (p *MongoDB) GetTargetByID(id string) (*types.Target, error) {
 	col := p.client.Database("spyglass").Collection("Targets")
-	res := col.FindOne(p.context, bson.M{"id": id})
-	var target types.Target
-	err := res.Err()
-	if err == nil {
-		res.Decode(&target)
-	} else if err == mongo.ErrNoDocuments {
+	id = strings.ToLower(id)
+	escapedID := types.GetIDForRegex(id)
+	regx := fmt.Sprintf(`^%s(\.[\w\d_\-]+){0,1}$`, escapedID)
+	cursor, err := col.Find(p.context, bson.M{"id": bson.M{"$regex": regx}})
+	if err != nil {
+		return nil, err
+	}
+	var targets []types.Target
+	err = cursor.All(p.context, &targets)
+	if err != nil {
+		return nil, err
+	}
+	if len(targets) == 0 {
 		return nil, nil
 	}
-	return &target, err
+	var parent types.Target
+	var children []types.Target
+	for _, t := range targets {
+		if t.ID == id {
+			parent = t
+			continue
+		}
+		children = append(children, t)
+	}
+	parent.Children = children
+	return &parent, err
 }
 
 // InsertTarget into the db.
 func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
+	target.ID = strings.ToLower(target.ID)
+	target.Children = []types.Target{}
 	target.CreatedAt = time.Now()
 	target.UpdatedAt = time.Now()
 	_, err := p.client.Database("spyglass").Collection("Targets").InsertOne(

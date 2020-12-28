@@ -3,11 +3,26 @@ POST http://localhost:8080/targets
 Content-Type: application/json
 
 {
-  "id": "mytargets",
+  "id": "mytargets2",
   "description": "this is my parent target",
   "monitor": {
-    "monitorId": "mymonitor"
+    "monitorId": "mymonitors.mymonitor-2"
   }
+}
+
+### Create parent target
+POST http://localhost:8080/targets
+Content-Type: application/json
+
+{
+  "id": "mytargets1",
+  "description": "this is my parent target",
+  "children": [
+    {
+      "id": "mytargets1.child",
+      "description": "this is my parent target"
+    }
+  ]
 }
 
 ### Create child target
@@ -18,9 +33,34 @@ Content-Type: application/json
   "id": "mytargets.mytarget-2",
   "description": "this is my target",
   "monitor": {
-    "monitorId": "mymonitor"
+    "monitorId": "mymonitors.mymonitor-2"
   }
 }
 
+### Create child2 target
+POST http://localhost:8080/targets
+Content-Type: application/json
+
+{
+  "id": "mytargets.MYTARGET-1",
+  "description": "this is my target",
+  "monitor": {
+    "monitorId": "mymonitors.mymonitor-2"
+  }
+}
+
+### Create child 3rd level target
+POST http://localhost:8080/targets
+Content-Type: application/json
+
+{
+  "id": "mytargets.mytarget-2.subtarget1",
+  "description": "this is my target",
+  "monitor": {
+    "monitorId": "mymonitors.mymonitor-2"
+  }
+}
+
+
 ### Get the child target
-GET http://localhost:8080/targets/mytargets.mytarget-2
+GET http://localhost:8080/targets/mytargets
