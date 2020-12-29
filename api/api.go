@@ -19,6 +19,7 @@ func Serve(db storage.Provider) *gin.Engine {
 	r.POST("/monitors", monitors.Post)
 	r.GET("/targets/:id", targets.Get)
 	r.GET("/targets", targets.GetAll)
+	r.PATCH("/targets/:id", targets.Patch)
 	r.POST("/targets", targets.Post)
 	return r
 }

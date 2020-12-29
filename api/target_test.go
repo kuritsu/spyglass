@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/kuritsu/spyglass/api/testutil"
 	"github.com/kuritsu/spyglass/api/types"
 	"github.com/stretchr/testify/assert"
@@ -244,6 +245,85 @@ func TestTargetPostMonitorExists(t *testing.T) {
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
 	assertValidTargetCreated(t, w, jsonBytes)
+}
+
+func TestTargetPatch(t *testing.T) {
+	r := Serve(&testutil.StorageMock{
+		GetTargetByIDResult: &types.Target{
+			ID:                "parentTarget.target1",
+			Status:            0,
+			StatusDescription: "Not done",
+		},
+	})
+	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
+
+	var newTarget types.Target
+	merr := json.Unmarshal(jsonBytes, &newTarget)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, nil, merr)
+	assert.Equal(t, 100, newTarget.Status)
+	assert.Equal(t, "Done", newTarget.StatusDescription)
+}
+
+func TestTargetPatchInvalidBody(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	targetPatch := gin.H{"statu": 100, "statusDescription": "Done"}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Error:Field validation for 'Status' failed on the 'required' tag")
+}
+
+func TestTargetPatchInvalidStatus(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	targetPatch := gin.H{"status": 101, "statusDescription": "Done"}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid status")
+}
+
+func TestTargetPatchGetTargetError(t *testing.T) {
+	r := Serve(&testutil.StorageMock{
+		GetTargetByIDError: errors.New("Connection error"),
+	})
+	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
+	w, _ := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestTargetPatchTargetNotFound(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
+	w, _ := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestTargetPatchInvalidTargetID(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target,1", targetPatch, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid target ID")
+}
+
+func TestTargetPatchUpdateError(t *testing.T) {
+	r := Serve(&testutil.StorageMock{
+		GetTargetByIDResult: &types.Target{
+			ID:                "parentTarget.target1",
+			Status:            0,
+			StatusDescription: "Not done",
+		},
+		UpdateTargetStatusError: errors.New("Connection error"),
+	})
+	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
+	w, _ := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func assertValidTargetCreated(t *testing.T, w *httptest.ResponseRecorder, jsonBytes []byte) {

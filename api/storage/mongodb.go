@@ -10,6 +10,7 @@ import (
 
 	"github.com/kuritsu/spyglass/api/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -155,6 +156,7 @@ func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string
 	if err != nil {
 		return nil, err
 	}
+	p.updateTargetListStatus(targets)
 	return targets, nil
 }
 
@@ -172,12 +174,16 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 }
 
 // GetTargetByID returns a target by its ID.
-func (p *MongoDB) GetTargetByID(id string) (*types.Target, error) {
+func (p *MongoDB) GetTargetByID(id string, includeChildren bool) (*types.Target, error) {
 	col := p.client.Database("spyglass").Collection("Targets")
 	id = strings.ToLower(id)
-	escapedID := types.GetIDForRegex(id)
-	regx := fmt.Sprintf(`^%s(\.[\w\d_\-]+){0,1}$`, escapedID)
-	cursor, err := col.Find(p.context, bson.M{"id": bson.M{"$regex": regx}})
+	expr := bson.M{"id": id}
+	if includeChildren {
+		escapedID := types.GetIDForRegex(id)
+		regx := fmt.Sprintf(`^%s(\.[\w\d_\-]+){0,1}$`, escapedID)
+		expr = bson.M{"id": bson.M{"$regex": regx}}
+	}
+	cursor, err := col.Find(p.context, expr)
 	if err != nil {
 		return nil, err
 	}
@@ -189,6 +195,7 @@ func (p *MongoDB) GetTargetByID(id string) (*types.Target, error) {
 	if len(targets) == 0 {
 		return nil, nil
 	}
+	p.updateTargetListStatus(targets)
 	var parent types.Target
 	var children []types.Target
 	for _, t := range targets {
@@ -214,5 +221,71 @@ func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 		log.Printf("Could not create Target: %v", err)
 		return nil, err
 	}
+	err = p.updateParentStatus(target, 1, target.Status)
+	if err != nil {
+		log.Printf("Could not create Target: %v", err)
+		return nil, err
+	}
 	return target, nil
+}
+
+// UpdateTargetStatus with all modified fields
+func (p *MongoDB) UpdateTargetStatus(target *types.Target, targetPatch *types.TargetPatch) (*types.Target, error) {
+	col := p.client.Database("spyglass").Collection("Targets")
+	lockedDoc := col.FindOneAndUpdate(p.context, bson.M{"id": target.ID},
+		bson.M{"$set": bson.M{"flock": bson.M{"pseudoRandom": primitive.NewObjectID()}}})
+	if lockedDoc.Err() != nil {
+		return nil, lockedDoc.Err()
+	}
+	lockedDoc.Decode(&target)
+	if targetPatch.StatusDescription == "" {
+		targetPatch.StatusDescription = target.StatusDescription
+	}
+	_, err := col.UpdateOne(p.context, bson.M{"id": target.ID},
+		bson.M{"$set": bson.M{
+			"status":            targetPatch.Status,
+			"statusDescription": targetPatch.StatusDescription}})
+	if err != nil {
+		return nil, err
+	}
+	diff := targetPatch.Status - target.Status
+	err = p.updateParentStatus(target, 0, diff)
+	if err != nil {
+		return nil, err
+	}
+	target.Status = targetPatch.Status
+	target.StatusDescription = targetPatch.StatusDescription
+	return target, nil
+}
+
+func (p *MongoDB) updateParentStatus(target *types.Target, childrenCount int, statusInc int) error {
+	parents := strings.Split(target.ID, ".")
+	if len(parents) < 2 {
+		return nil
+	}
+	col := p.client.Database("spyglass").Collection("Targets")
+	parentIds := []string{}
+	prefix := ""
+	for idx, p := range parents[0 : len(parents)-1] {
+		if idx > 0 {
+			prefix = parentIds[idx-1] + "."
+		}
+		parentIds = append(parentIds, prefix+p)
+	}
+	_, err := col.UpdateMany(p.context,
+		bson.M{"id": bson.M{"$in": parentIds}},
+		bson.M{"$inc": bson.M{"childrenCount": childrenCount, "statusTotal": statusInc}})
+	return err
+}
+
+func (p *MongoDB) updateTargetListStatus(targets []types.Target) {
+	for _, t := range targets {
+		if t.ChildrenCount > 0 {
+			if t.StatusTotal == 0 {
+				t.Status = 0
+				continue
+			}
+			t.Status = t.ChildrenCount * 100 / t.StatusTotal
+		}
+	}
 }

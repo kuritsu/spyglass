@@ -27,7 +27,7 @@ func (t *TargetController) Get(c *gin.Context) {
 	id := c.Param("id")
 	t.db.Init()
 	defer t.db.Free()
-	target, err := t.db.GetTargetByID(id)
+	target, err := t.db.GetTargetByID(id, false)
 	switch {
 	case err != nil:
 		log.Println("ERROR: ", err.Error())
@@ -82,7 +82,7 @@ func (t *TargetController) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, []types.Target(targets))
 }
 
-// Post a new monitor
+// Post a new target
 func (t *TargetController) Post(c *gin.Context) {
 	var target types.Target
 	if er := c.ShouldBind(&target); er != nil {
@@ -131,13 +131,62 @@ func (t *TargetController) Post(c *gin.Context) {
 	c.JSON(http.StatusCreated, target)
 }
 
+// Patch the target status
+func (t *TargetController) Patch(c *gin.Context) {
+	id := c.Param("id")
+	var targetPatch types.TargetPatch
+	er := c.ShouldBind(&targetPatch)
+	switch {
+	case er != nil:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": er.Error(),
+		})
+		return
+	case targetPatch.Status < 0 || targetPatch.Status > 100:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid status.",
+		})
+		return
+	case !IsValidID(id):
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid target ID.",
+		})
+		return
+	}
+	t.db.Init()
+	defer t.db.Free()
+	target, err := t.db.GetTargetByID(id, false)
+	switch {
+	case err != nil:
+		log.Println("ERROR: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal error. Try again.",
+		})
+		return
+	case target == nil:
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Target not found.",
+		})
+		return
+	}
+	newTarget, err := t.db.UpdateTargetStatus(target, &targetPatch)
+	if err != nil {
+		log.Println("ERROR: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal error. Try again.",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, newTarget)
+}
+
 func (t *TargetController) parentMissing(childID string) *ErrorWithCode {
 	parentID := types.GetTargetParentByID(childID)
 	if parentID == "" {
 		return nil
 	}
 
-	parent, err := t.db.GetTargetByID(parentID)
+	parent, err := t.db.GetTargetByID(parentID, false)
 	if err != nil {
 		log.Println(err.Error())
 		return &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}

@@ -24,10 +24,18 @@ type Target struct {
 	View              *View       `json:"view,omitempty" bson:",omitempty"`
 	Status            int         `json:"status"`
 	StatusDescription string      `json:"statusDescription,omitempty" bson:",omitempty"`
+	StatusTotal       int         `json:"-"`
 	Critical          bool        `json:"critical"`
 	Monitor           *MonitorRef `json:"monitor,omitempty" bson:",omitempty"`
 	Children          []Target    `json:"children,omitempty" bson:",omitempty"`
+	ChildrenCount     int         `json:"childrenCount"`
 	Permissions
+}
+
+// TargetPatch represents the fields that can be patched
+type TargetPatch struct {
+	Status            int    `json:"status" binding:"required"`
+	StatusDescription string `json:"statusDescription"`
 }
 
 // GetTargetParentByID obtains the parent ID of a target given its ID

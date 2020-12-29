@@ -10,16 +10,17 @@ import (
 // StorageMock is a mock for storage
 type StorageMock struct {
 	mock.Mock
-	GetMonitorByIDResult *types.Monitor
-	GetMonitorByIDError  error
-	GetAllMonitorsResult []types.Monitor
-	GetAllMonitorsError  error
-	GetTargetByIDResult  *types.Target
-	GetTargetByIDError   error
-	GetAllTargetsResult  []types.Target
-	GetAllTargetsError   error
-	InsertMonitorError   error
-	InsertTargetError    error
+	GetMonitorByIDResult    *types.Monitor
+	GetMonitorByIDError     error
+	GetAllMonitorsResult    []types.Monitor
+	GetAllMonitorsError     error
+	GetTargetByIDResult     *types.Target
+	GetTargetByIDError      error
+	GetAllTargetsResult     []types.Target
+	GetAllTargetsError      error
+	InsertMonitorError      error
+	InsertTargetError       error
+	UpdateTargetStatusError error
 }
 
 // Init with nothing
@@ -50,7 +51,7 @@ func (m *StorageMock) InsertMonitor(monitor *types.Monitor) (*types.Monitor, err
 }
 
 // GetTargetByID returns nothing
-func (m *StorageMock) GetTargetByID(id string) (*types.Target, error) {
+func (m *StorageMock) GetTargetByID(id string, includeChildren bool) (*types.Target, error) {
 	return m.GetTargetByIDResult, m.GetTargetByIDError
 }
 
@@ -58,4 +59,13 @@ func (m *StorageMock) GetTargetByID(id string) (*types.Target, error) {
 func (m *StorageMock) InsertTarget(target *types.Target) (*types.Target, error) {
 	target.CreatedAt = time.Now()
 	return target, m.InsertTargetError
+}
+
+// UpdateTargetStatus with all modified fields
+func (m *StorageMock) UpdateTargetStatus(target *types.Target, targetPatch *types.TargetPatch) (*types.Target, error) {
+	target.Status = targetPatch.Status
+	if targetPatch.StatusDescription != "" {
+		target.StatusDescription = targetPatch.StatusDescription
+	}
+	return target, m.UpdateTargetStatusError
 }
