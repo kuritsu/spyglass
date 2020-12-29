@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,44 @@ func (t *TargetController) Get(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, target)
+}
+
+// GetAll targets, paginated and filtered
+func (t *TargetController) GetAll(c *gin.Context) {
+	t.db.Init()
+	defer t.db.Free()
+	pageSizeString := c.DefaultQuery("pageSize", "10")
+	pageIndexString := c.DefaultQuery("pageIndex", "0")
+	pageSize, err := strconv.ParseInt(pageSizeString, 10, 64)
+	if err != nil || pageSize > 100 || pageSize < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid page size.",
+		})
+		return
+	}
+	pageIndex, err := strconv.ParseInt(pageIndexString, 10, 64)
+	if err != nil || pageIndex < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid page index.",
+		})
+		return
+	}
+	contains := c.Query("contains")
+	if contains != "" && !IsValidIDFragment(contains) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid contains expression.",
+		})
+		return
+	}
+	targets, err := t.db.GetAllTargets(pageSize, pageIndex, contains)
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid operation. Try again.",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, []types.Target(targets))
 }
 
 // Post a new monitor

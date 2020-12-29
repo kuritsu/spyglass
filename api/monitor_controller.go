@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -40,6 +41,44 @@ func (m *MonitorController) Get(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, monitor)
+}
+
+// GetAll monitors, paginated
+func (m *MonitorController) GetAll(c *gin.Context) {
+	m.db.Init()
+	defer m.db.Free()
+	pageSizeString := c.DefaultQuery("pageSize", "10")
+	pageIndexString := c.DefaultQuery("pageIndex", "0")
+	pageSize, err := strconv.ParseInt(pageSizeString, 10, 64)
+	if err != nil || pageSize > 100 || pageSize < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid page size.",
+		})
+		return
+	}
+	pageIndex, err := strconv.ParseInt(pageIndexString, 10, 64)
+	if err != nil || pageIndex < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid page index.",
+		})
+		return
+	}
+	contains := c.Query("contains")
+	if contains != "" && !IsValidIDFragment(contains) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid contains expression.",
+		})
+		return
+	}
+	monitor, err := m.db.GetAllMonitors(pageSize, pageIndex, contains)
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid operation. Try again.",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, []types.Monitor(monitor))
 }
 
 // Post a new monitor

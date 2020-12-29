@@ -48,6 +48,91 @@ func TestMonitorGetDbError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
+func TestMonitorGetAll(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllMonitorsResult: []types.Monitor{
+			{ID: "1"},
+			{ID: "2"},
+			{ID: "3"},
+		},
+	}
+	r := Serve(&dbMock)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors", nil, r)
+
+	var monitors []types.Monitor
+	merr := json.Unmarshal(jsonBytes, &monitors)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, nil, merr)
+	assert.Equal(t, 3, len(monitors))
+}
+
+func TestMonitorGetAllWithPageSize(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllMonitorsResult: []types.Monitor{
+			{ID: "2"},
+		},
+	}
+	r := Serve(&dbMock)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?pageSize=1&pageIndex=0", nil, r)
+
+	var monitors []types.Monitor
+	json.Unmarshal(jsonBytes, &monitors)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, 1, len(monitors))
+}
+
+func TestMonitorGetAllEmptyList(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllMonitorsResult: []types.Monitor{},
+	}
+	r := Serve(&dbMock)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors", nil, r)
+
+	var monitors []types.Monitor
+	merr := json.Unmarshal(jsonBytes, &monitors)
+
+	assert.Equal(t, w.Code, http.StatusOK)
+	assert.Equal(t, merr, nil)
+	assert.NotNil(t, monitors)
+	assert.Equal(t, len(monitors), 0)
+}
+
+func TestMonitorGetAllWithDbError(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllMonitorsError: errors.New("Connection error"),
+	}
+	r := Serve(&dbMock)
+	w, _ := testutil.MakeRequest(http.MethodGet, "/monitors", nil, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestMonitorGetAllWithInvalidPageSize(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?pageSize=asd", nil, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid page size")
+}
+
+func TestMonitorGetAllWithInvalidPageIndex(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?pageIndex=asd", nil, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid page index")
+}
+
+func TestMonitorGetAllWithInvalidContains(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?contains=a,sd", nil, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid contains expression")
+}
+
 func TestMonitorPost(t *testing.T) {
 	r := Serve(&testutil.StorageMock{})
 	monitor := getValidMonitor()
@@ -101,8 +186,8 @@ func assertValidMonitorCreated(t *testing.T, w *httptest.ResponseRecorder, jsonB
 	merr := json.Unmarshal(jsonBytes, &newMonitor)
 
 	assert.Equal(t, nil, merr)
-	assert.Equal(t, http.StatusCreated, w.Code)
-	assert.NotEqual(t, time.Time{}, newMonitor.CreatedAt)
+	assert.Equal(t, w.Code, http.StatusCreated)
+	assert.NotEqual(t, newMonitor.CreatedAt, time.Time{})
 }
 
 func getValidMonitor() *types.Monitor {

@@ -12,8 +12,12 @@ type StorageMock struct {
 	mock.Mock
 	GetMonitorByIDResult *types.Monitor
 	GetMonitorByIDError  error
+	GetAllMonitorsResult []types.Monitor
+	GetAllMonitorsError  error
 	GetTargetByIDResult  *types.Target
 	GetTargetByIDError   error
+	GetAllTargetsResult  []types.Target
+	GetAllTargetsError   error
 	InsertMonitorError   error
 	InsertTargetError    error
 }
@@ -24,9 +28,19 @@ func (m *StorageMock) Init() {}
 // Free resources
 func (m *StorageMock) Free() {}
 
-// GetMonitorByID returns nothing
+// GetMonitorByID returns mocked stuff
 func (m *StorageMock) GetMonitorByID(id string) (*types.Monitor, error) {
 	return m.GetMonitorByIDResult, m.GetMonitorByIDError
+}
+
+// GetAllMonitors returns mocked stuff
+func (m *StorageMock) GetAllMonitors(pageSize int64, pageIndex int64, contains string) ([]types.Monitor, error) {
+	return m.GetAllMonitorsResult, m.GetAllMonitorsError
+}
+
+// GetAllTargets returns mocked stuff
+func (m *StorageMock) GetAllTargets(pageSize int64, pageIndex int64, contains string) ([]types.Target, error) {
+	return m.GetAllTargetsResult, m.GetAllTargetsError
 }
 
 // InsertMonitor in the db

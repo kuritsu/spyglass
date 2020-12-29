@@ -47,6 +47,91 @@ func TestTargetGetDbError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
+func TestTargetGetAll(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllTargetsResult: []types.Target{
+			{ID: "1"},
+			{ID: "2"},
+			{ID: "3"},
+		},
+	}
+	r := Serve(&dbMock)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets", nil, r)
+
+	var targets []types.Target
+	merr := json.Unmarshal(jsonBytes, &targets)
+
+	assert.Equal(t, w.Code, http.StatusOK)
+	assert.Equal(t, nil, merr)
+	assert.Equal(t, 3, len(targets))
+}
+
+func TestTargetGetAllWithPageSize(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllTargetsResult: []types.Target{
+			{ID: "2"},
+		},
+	}
+	r := Serve(&dbMock)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?pageSize=1&pageIndex=0", nil, r)
+
+	var targets []types.Target
+	json.Unmarshal(jsonBytes, &targets)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, 1, len(targets))
+}
+
+func TestTargetGetAllEmptyList(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllTargetsResult: []types.Target{},
+	}
+	r := Serve(&dbMock)
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets", nil, r)
+
+	var targets []types.Target
+	merr := json.Unmarshal(jsonBytes, &targets)
+
+	assert.Equal(t, w.Code, http.StatusOK)
+	assert.Equal(t, merr, nil)
+	assert.NotNil(t, targets)
+	assert.Equal(t, len(targets), 0)
+}
+
+func TestTargetGetAllWithDbError(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetAllTargetsError: errors.New("Connection error"),
+	}
+	r := Serve(&dbMock)
+	w, _ := testutil.MakeRequest(http.MethodGet, "/targets", nil, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestTargetGetAllWithInvalidPageSize(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?pageSize=asd", nil, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid page size")
+}
+
+func TestTargetGetAllWithInvalidPageIndex(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?pageIndex=asd", nil, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid page index")
+}
+
+func TestTargetGetAllWithInvalidContains(t *testing.T) {
+	r := Serve(&testutil.StorageMock{})
+	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?contains=a,sd", nil, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid contains expression")
+}
+
 func TestTargetPost(t *testing.T) {
 	r := Serve(&testutil.StorageMock{})
 	target := getValidTarget()
@@ -129,7 +214,7 @@ func TestTargetPostParentExists(t *testing.T) {
 	assertValidTargetCreated(t, w, jsonBytes)
 }
 
-func TestTargetPostMonitorDoesntExist(t *testing.T) {
+func TestTargetPostTargetDoesntExist(t *testing.T) {
 	r := Serve(&testutil.StorageMock{})
 	target := getValidTarget()
 	target.Monitor = &types.MonitorRef{MonitorID: "monitor1"}

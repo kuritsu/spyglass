@@ -107,6 +107,57 @@ func (p *MongoDB) GetMonitorByID(id string) (*types.Monitor, error) {
 	return &monitor, err
 }
 
+// GetAllMonitors returns all monitors which contains a string, paginated.
+func (p *MongoDB) GetAllMonitors(pageSize int64, pageIndex int64, contains string) ([]types.Monitor, error) {
+	col := p.client.Database("spyglass").Collection("Monitors")
+	filter := bson.M{}
+	if contains != "" {
+		contains = types.GetIDForRegex(contains)
+		filter["id"] = bson.M{"$regex": contains}
+	}
+	skip := pageIndex * pageSize
+	opts := options.FindOptions{
+		Skip:  &skip,
+		Sort:  bson.M{"id": 1},
+		Limit: &pageSize,
+	}
+	cursor, err := col.Find(p.context, filter, &opts)
+	if err != nil {
+		return nil, err
+	}
+	monitors := make([]types.Monitor, 0)
+	err = cursor.All(p.context, &monitors)
+	if err != nil {
+		return nil, err
+	}
+	return monitors, nil
+}
+
+// GetAllTargets returns all targets which contains a string, paginated.
+func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string) ([]types.Target, error) {
+	col := p.client.Database("spyglass").Collection("Targets")
+	containsRegex := `^[\w\d\-_]+$`
+	if contains != "" {
+		containsRegex = types.GetIDForRegex(contains)
+	}
+	skip := pageIndex * pageSize
+	opts := options.FindOptions{
+		Skip:  &skip,
+		Sort:  bson.M{"id": 1},
+		Limit: &pageSize,
+	}
+	cursor, err := col.Find(p.context, bson.M{"id": bson.M{"$regex": containsRegex}}, &opts)
+	if err != nil {
+		return nil, err
+	}
+	targets := make([]types.Target, 0)
+	err = cursor.All(p.context, &targets)
+	if err != nil {
+		return nil, err
+	}
+	return targets, nil
+}
+
 // InsertMonitor into the db
 func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) {
 	monitor.CreatedAt = time.Now()
