@@ -35,6 +35,7 @@ func (p *MongoDB) Init() {
 		log.Fatalln("ERROR: No MongoDB connection string provided. (MONGODB_CONNECTIONSTRING)")
 	}
 
+	// TODO: Change this to a transaction
 	client, err := mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
 		log.Printf("Failed to create client: %v", err)
@@ -135,7 +136,7 @@ func (p *MongoDB) GetAllMonitors(pageSize int64, pageIndex int64, contains strin
 }
 
 // GetAllTargets returns all targets which contains a string, paginated.
-func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string) ([]types.Target, error) {
+func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string) ([]*types.Target, error) {
 	col := p.client.Database("spyglass").Collection("Targets")
 	containsRegex := `^[\w\d\-_]+$`
 	if contains != "" {
@@ -151,7 +152,7 @@ func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string
 	if err != nil {
 		return nil, err
 	}
-	targets := make([]types.Target, 0)
+	targets := make([]*types.Target, 0)
 	err = cursor.All(p.context, &targets)
 	if err != nil {
 		return nil, err
@@ -187,7 +188,7 @@ func (p *MongoDB) GetTargetByID(id string, includeChildren bool) (*types.Target,
 	if err != nil {
 		return nil, err
 	}
-	var targets []types.Target
+	var targets []*types.Target
 	err = cursor.All(p.context, &targets)
 	if err != nil {
 		return nil, err
@@ -196,17 +197,17 @@ func (p *MongoDB) GetTargetByID(id string, includeChildren bool) (*types.Target,
 		return nil, nil
 	}
 	p.updateTargetListStatus(targets)
-	var parent types.Target
+	var parent *types.Target
 	var children []types.Target
 	for _, t := range targets {
 		if t.ID == id {
 			parent = t
 			continue
 		}
-		children = append(children, t)
+		children = append(children, *t)
 	}
 	parent.Children = children
-	return &parent, err
+	return parent, err
 }
 
 // InsertTarget into the db.
@@ -215,15 +216,13 @@ func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 	target.Children = []types.Target{}
 	target.CreatedAt = time.Now()
 	target.UpdatedAt = time.Now()
-	_, err := p.client.Database("spyglass").Collection("Targets").InsertOne(
-		p.context, target)
-	if err != nil {
+	col := p.client.Database("spyglass").Collection("Targets")
+	if _, err := col.InsertOne(p.context, target); err != nil {
 		log.Printf("Could not create Target: %v", err)
 		return nil, err
 	}
-	err = p.updateParentStatus(target, 1, target.Status)
-	if err != nil {
-		log.Printf("Could not create Target: %v", err)
+	if err := p.updateParentStatus(target, 1, target.Status); err != nil {
+		log.Printf("Error updating parents: %v", err)
 		return nil, err
 	}
 	return target, nil
@@ -263,6 +262,7 @@ func (p *MongoDB) updateParentStatus(target *types.Target, childrenCount int, st
 	if len(parents) < 2 {
 		return nil
 	}
+	log.Println(len(parents)-1, " parents need update.")
 	col := p.client.Database("spyglass").Collection("Targets")
 	parentIds := []string{}
 	prefix := ""
@@ -271,21 +271,23 @@ func (p *MongoDB) updateParentStatus(target *types.Target, childrenCount int, st
 			prefix = parentIds[idx-1] + "."
 		}
 		parentIds = append(parentIds, prefix+p)
+		log.Println(parentIds[idx])
 	}
-	_, err := col.UpdateMany(p.context,
+	updateResult, err := col.UpdateMany(p.context,
 		bson.M{"id": bson.M{"$in": parentIds}},
 		bson.M{"$inc": bson.M{"childrenCount": childrenCount, "statusTotal": statusInc}})
+	log.Println(updateResult)
 	return err
 }
 
-func (p *MongoDB) updateTargetListStatus(targets []types.Target) {
+func (p *MongoDB) updateTargetListStatus(targets []*types.Target) {
 	for _, t := range targets {
 		if t.ChildrenCount > 0 {
 			if t.StatusTotal == 0 {
 				t.Status = 0
 				continue
 			}
-			t.Status = t.ChildrenCount * 100 / t.StatusTotal
+			t.Status = t.StatusTotal * 100 / (t.ChildrenCount * 100)
 		}
 	}
 }

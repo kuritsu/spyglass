@@ -24,11 +24,11 @@ type Target struct {
 	View              *View       `json:"view,omitempty" bson:",omitempty"`
 	Status            int         `json:"status"`
 	StatusDescription string      `json:"statusDescription,omitempty" bson:",omitempty"`
-	StatusTotal       int         `json:"-"`
+	StatusTotal       int         `json:"-" bson:"statusTotal"`
 	Critical          bool        `json:"critical"`
 	Monitor           *MonitorRef `json:"monitor,omitempty" bson:",omitempty"`
 	Children          []Target    `json:"children,omitempty" bson:",omitempty"`
-	ChildrenCount     int         `json:"childrenCount"`
+	ChildrenCount     int         `json:"childrenCount" bson:"childrenCount"`
 	Permissions
 }
 

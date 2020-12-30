@@ -50,7 +50,7 @@ func TestTargetGetDbError(t *testing.T) {
 
 func TestTargetGetAll(t *testing.T) {
 	dbMock := testutil.StorageMock{
-		GetAllTargetsResult: []types.Target{
+		GetAllTargetsResult: []*types.Target{
 			{ID: "1"},
 			{ID: "2"},
 			{ID: "3"},
@@ -69,7 +69,7 @@ func TestTargetGetAll(t *testing.T) {
 
 func TestTargetGetAllWithPageSize(t *testing.T) {
 	dbMock := testutil.StorageMock{
-		GetAllTargetsResult: []types.Target{
+		GetAllTargetsResult: []*types.Target{
 			{ID: "2"},
 		},
 	}
@@ -85,7 +85,7 @@ func TestTargetGetAllWithPageSize(t *testing.T) {
 
 func TestTargetGetAllEmptyList(t *testing.T) {
 	dbMock := testutil.StorageMock{
-		GetAllTargetsResult: []types.Target{},
+		GetAllTargetsResult: []*types.Target{},
 	}
 	r := Serve(&dbMock)
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets", nil, r)

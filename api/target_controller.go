@@ -27,7 +27,7 @@ func (t *TargetController) Get(c *gin.Context) {
 	id := c.Param("id")
 	t.db.Init()
 	defer t.db.Free()
-	target, err := t.db.GetTargetByID(id, false)
+	target, err := t.db.GetTargetByID(id, true)
 	switch {
 	case err != nil:
 		log.Println("ERROR: ", err.Error())
@@ -79,7 +79,7 @@ func (t *TargetController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, []types.Target(targets))
+	c.JSON(http.StatusOK, []*types.Target(targets))
 }
 
 // Post a new target
@@ -99,15 +99,14 @@ func (t *TargetController) Post(c *gin.Context) {
 	}
 	t.db.Init()
 	defer t.db.Free()
-	perr := t.parentMissing(target.ID)
+	_, perr := t.parentMissing(target.ID)
 	if perr != nil {
 		c.JSON(perr.Code, gin.H{
 			"message": perr.Error(),
 		})
 		return
 	}
-	perr = t.monitorMissing(target.Monitor)
-	if perr != nil {
+	if perr := t.monitorMissing(target.Monitor); perr != nil {
 		c.JSON(perr.Code, gin.H{
 			"message": perr.Error(),
 		})
@@ -180,23 +179,23 @@ func (t *TargetController) Patch(c *gin.Context) {
 	c.JSON(http.StatusOK, newTarget)
 }
 
-func (t *TargetController) parentMissing(childID string) *ErrorWithCode {
+func (t *TargetController) parentMissing(childID string) (*types.Target, *ErrorWithCode) {
 	parentID := types.GetTargetParentByID(childID)
 	if parentID == "" {
-		return nil
+		return nil, nil
 	}
 
 	parent, err := t.db.GetTargetByID(parentID, false)
 	if err != nil {
 		log.Println(err.Error())
-		return &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}
+		return nil, &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}
 	}
 	if parent == nil {
 		msg := fmt.Sprintf("Target parent does not exist. (%s)", parentID)
 		log.Println(msg)
-		return &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
+		return nil, &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
 	}
-	return nil
+	return parent, nil
 }
 
 func (t *TargetController) monitorMissing(monitorRef *types.MonitorRef) *ErrorWithCode {

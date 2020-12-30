@@ -3,8 +3,9 @@ POST http://localhost:8080/targets
 Content-Type: application/json
 
 {
-  "id": "mytargets2",
+  "id": "mytargets",
   "description": "this is my parent target",
+  "status": 5,
   "monitor": {
     "monitorId": "mymonitors.mymonitor-2"
   }
@@ -32,6 +33,7 @@ Content-Type: application/json
 {
   "id": "mytargets.mytarget-2",
   "description": "this is my target",
+  "status": 5,
   "monitor": {
     "monitorId": "mymonitors.mymonitor-2"
   }
@@ -43,6 +45,20 @@ Content-Type: application/json
 
 {
   "id": "mytargets.MYTARGET-1",
+  "status": 5,
+  "description": "this is my target",
+  "monitor": {
+    "monitorId": "mymonitors.mymonitor-2"
+  }
+}
+
+### Create child3 target
+POST http://localhost:8080/targets
+Content-Type: application/json
+
+{
+  "id": "mytargets.MYTARGET-3",
+  "status": 40,
   "description": "this is my target",
   "monitor": {
     "monitorId": "mymonitors.mymonitor-2"
@@ -61,10 +77,17 @@ Content-Type: application/json
   }
 }
 
-
 ### Get the child target
 GET http://localhost:8080/targets/mytargets
 
 
 ### Get the child target
-GET http://localhost:8080/targets?pageSize=2&pageIndex=0&contains=mytarget
+GET http://localhost:8080/targets?pageSize=4&pageIndex=0&contains=mytarget
+
+### Patch a target
+PATCH http://localhost:8080/targets/mytargets.mytarget-1
+Content-Type: application/json
+
+{
+  "status": 100
+}

@@ -16,7 +16,7 @@ type StorageMock struct {
 	GetAllMonitorsError     error
 	GetTargetByIDResult     *types.Target
 	GetTargetByIDError      error
-	GetAllTargetsResult     []types.Target
+	GetAllTargetsResult     []*types.Target
 	GetAllTargetsError      error
 	InsertMonitorError      error
 	InsertTargetError       error
@@ -40,7 +40,7 @@ func (m *StorageMock) GetAllMonitors(pageSize int64, pageIndex int64, contains s
 }
 
 // GetAllTargets returns mocked stuff
-func (m *StorageMock) GetAllTargets(pageSize int64, pageIndex int64, contains string) ([]types.Target, error) {
+func (m *StorageMock) GetAllTargets(pageSize int64, pageIndex int64, contains string) ([]*types.Target, error) {
 	return m.GetAllTargetsResult, m.GetAllTargetsError
 }
 
