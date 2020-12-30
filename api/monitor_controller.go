@@ -1,10 +1,11 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kuritsu/spyglass/api/storage"

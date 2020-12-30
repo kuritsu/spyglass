@@ -3,10 +3,11 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/kuritsu/spyglass/api/types"
 	"go.mongodb.org/mongo-driver/bson"

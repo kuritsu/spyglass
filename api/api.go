@@ -5,14 +5,25 @@ import (
 	"github.com/kuritsu/spyglass/api/storage"
 )
 
-// Serve is the API host
-func Serve(db storage.Provider) *gin.Engine {
-	r := gin.Default()
+// API is the API object
+type API struct {
+	db storage.Provider
+}
 
+// Create is the API host
+func Create(db storage.Provider) *API {
+	result := API{db}
+	return &result
+}
+
+// Serve the API
+func (api *API) Serve() {
+	gin.SetMode(gin.DebugMode)
+	r := gin.Default()
 	monitors := MonitorController{}
 	targets := TargetController{}
-	monitors.Init(db)
-	targets.Init(db)
+	monitors.Init(api.db)
+	targets.Init(api.db)
 
 	r.GET("/monitors/:id", monitors.Get)
 	r.GET("/monitors", monitors.GetAll)
@@ -21,5 +32,6 @@ func Serve(db storage.Provider) *gin.Engine {
 	r.GET("/targets", targets.GetAll)
 	r.PATCH("/targets/:id", targets.Patch)
 	r.POST("/targets", targets.Post)
-	return r
+
+	r.Run()
 }
