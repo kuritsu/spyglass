@@ -17,7 +17,7 @@ func Create(db storage.Provider) *API {
 }
 
 // Serve the API
-func (api *API) Serve() {
+func (api *API) Serve() *gin.Engine {
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
 	monitors := MonitorController{}
@@ -33,5 +33,5 @@ func (api *API) Serve() {
 	r.PATCH("/targets/:id", targets.Patch)
 	r.POST("/targets", targets.Post)
 
-	r.Run()
+	return r
 }

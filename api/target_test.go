@@ -20,7 +20,7 @@ func TestTargetGet(t *testing.T) {
 			ID: "mytarget",
 		},
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets/mytarget", nil, r)
 
 	var target types.Target
@@ -32,7 +32,7 @@ func TestTargetGet(t *testing.T) {
 }
 
 func TestTargetGetNotFound(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	w, _ := testutil.MakeRequest(http.MethodGet, "/targets/mytarget", nil, r)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
@@ -42,7 +42,7 @@ func TestTargetGetDbError(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		GetTargetByIDError: errors.New("Connection error"),
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	w, _ := testutil.MakeRequest(http.MethodGet, "/targets/mytarget", nil, r)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -56,7 +56,7 @@ func TestTargetGetAll(t *testing.T) {
 			{ID: "3"},
 		},
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets", nil, r)
 
 	var targets []types.Target
@@ -73,7 +73,7 @@ func TestTargetGetAllWithPageSize(t *testing.T) {
 			{ID: "2"},
 		},
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?pageSize=1&pageIndex=0", nil, r)
 
 	var targets []types.Target
@@ -87,7 +87,7 @@ func TestTargetGetAllEmptyList(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		GetAllTargetsResult: []*types.Target{},
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets", nil, r)
 
 	var targets []types.Target
@@ -103,14 +103,14 @@ func TestTargetGetAllWithDbError(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		GetAllTargetsError: errors.New("Connection error"),
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	w, _ := testutil.MakeRequest(http.MethodGet, "/targets", nil, r)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestTargetGetAllWithInvalidPageSize(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?pageSize=asd", nil, r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -118,7 +118,7 @@ func TestTargetGetAllWithInvalidPageSize(t *testing.T) {
 }
 
 func TestTargetGetAllWithInvalidPageIndex(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?pageIndex=asd", nil, r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -126,7 +126,7 @@ func TestTargetGetAllWithInvalidPageIndex(t *testing.T) {
 }
 
 func TestTargetGetAllWithInvalidContains(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/targets?contains=a,sd", nil, r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -134,7 +134,7 @@ func TestTargetGetAllWithInvalidContains(t *testing.T) {
 }
 
 func TestTargetPost(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	target := getValidTarget()
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
@@ -142,7 +142,7 @@ func TestTargetPost(t *testing.T) {
 }
 
 func TestTargetPostInvalidTarget(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", "", r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -152,7 +152,7 @@ func TestTargetPostDbError(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		InsertTargetError: errors.New("Connection error"),
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	target := getValidTarget()
 	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
@@ -163,7 +163,7 @@ func TestTargetPostErrorDuplicate(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		InsertTargetError: errors.New("Duplicate"),
 	}
-	r := Serve(&dbMock)
+	r := Create(&dbMock).Serve()
 	target := getValidTarget()
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
 
@@ -172,7 +172,7 @@ func TestTargetPostErrorDuplicate(t *testing.T) {
 }
 
 func TestTargetPostErrorInvalidID(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	target := getValidTarget()
 	target.ID = ".target/"
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
@@ -182,7 +182,7 @@ func TestTargetPostErrorInvalidID(t *testing.T) {
 }
 
 func TestTargetPostNoParentFoundError(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	target := getValidTarget()
 	target.ID = "mytargets.target-1"
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
@@ -192,9 +192,10 @@ func TestTargetPostNoParentFoundError(t *testing.T) {
 }
 
 func TestTargetPostSearchingForParentError(t *testing.T) {
-	r := Serve(&testutil.StorageMock{
+	dbMock := testutil.StorageMock{
 		GetTargetByIDError: errors.New("Connection error"),
-	})
+	}
+	r := Create(&dbMock).Serve()
 	target := getValidTarget()
 	target.ID = "mytargets.target-1"
 	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
@@ -203,11 +204,12 @@ func TestTargetPostSearchingForParentError(t *testing.T) {
 }
 
 func TestTargetPostParentExists(t *testing.T) {
-	r := Serve(&testutil.StorageMock{
+	dbMock := testutil.StorageMock{
 		GetTargetByIDResult: &types.Target{
 			ID: "mytargets",
 		},
-	})
+	}
+	r := Create(&dbMock).Serve()
 	target := getValidTarget()
 	target.ID = "mytargets.target-1"
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
@@ -216,7 +218,7 @@ func TestTargetPostParentExists(t *testing.T) {
 }
 
 func TestTargetPostTargetDoesntExist(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	target := getValidTarget()
 	target.Monitor = &types.MonitorRef{MonitorID: "monitor1"}
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
@@ -226,9 +228,10 @@ func TestTargetPostTargetDoesntExist(t *testing.T) {
 }
 
 func TestTargetPostGetMonitorHasDbError(t *testing.T) {
-	r := Serve(&testutil.StorageMock{
+	dbMock := testutil.StorageMock{
 		GetMonitorByIDError: errors.New("Connection error"),
-	})
+	}
+	r := Create(&dbMock).Serve()
 	target := getValidTarget()
 	target.Monitor = &types.MonitorRef{MonitorID: "monitor1"}
 	w, _ := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
@@ -237,9 +240,10 @@ func TestTargetPostGetMonitorHasDbError(t *testing.T) {
 }
 
 func TestTargetPostMonitorExists(t *testing.T) {
-	r := Serve(&testutil.StorageMock{
+	dbMock := testutil.StorageMock{
 		GetMonitorByIDResult: &types.Monitor{ID: "monitor1"},
-	})
+	}
+	r := Create(&dbMock).Serve()
 	target := getValidTarget()
 	target.Monitor = &types.MonitorRef{MonitorID: "monitor1"}
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/targets", target, r)
@@ -248,13 +252,14 @@ func TestTargetPostMonitorExists(t *testing.T) {
 }
 
 func TestTargetPatch(t *testing.T) {
-	r := Serve(&testutil.StorageMock{
+	dbMock := testutil.StorageMock{
 		GetTargetByIDResult: &types.Target{
 			ID:                "parentTarget.target1",
 			Status:            0,
 			StatusDescription: "Not done",
 		},
-	})
+	}
+	r := Create(&dbMock).Serve()
 	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
 	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
 
@@ -267,7 +272,7 @@ func TestTargetPatch(t *testing.T) {
 }
 
 func TestTargetPatchInvalidBody(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	targetPatch := gin.H{"statu": 100, "statusDescription": "Done"}
 	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
 
@@ -276,7 +281,7 @@ func TestTargetPatchInvalidBody(t *testing.T) {
 }
 
 func TestTargetPatchInvalidStatus(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	targetPatch := gin.H{"status": 101, "statusDescription": "Done"}
 	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
 
@@ -285,9 +290,10 @@ func TestTargetPatchInvalidStatus(t *testing.T) {
 }
 
 func TestTargetPatchGetTargetError(t *testing.T) {
-	r := Serve(&testutil.StorageMock{
+	dbMock := testutil.StorageMock{
 		GetTargetByIDError: errors.New("Connection error"),
-	})
+	}
+	r := Create(&dbMock).Serve()
 	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
 	w, _ := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
 
@@ -295,7 +301,7 @@ func TestTargetPatchGetTargetError(t *testing.T) {
 }
 
 func TestTargetPatchTargetNotFound(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
 	w, _ := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
 
@@ -303,7 +309,7 @@ func TestTargetPatchTargetNotFound(t *testing.T) {
 }
 
 func TestTargetPatchInvalidTargetID(t *testing.T) {
-	r := Serve(&testutil.StorageMock{})
+	r := Create(&testutil.StorageMock{}).Serve()
 	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
 	w, jsonBytes := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target,1", targetPatch, r)
 
@@ -312,14 +318,15 @@ func TestTargetPatchInvalidTargetID(t *testing.T) {
 }
 
 func TestTargetPatchUpdateError(t *testing.T) {
-	r := Serve(&testutil.StorageMock{
+	dbMock := testutil.StorageMock{
 		GetTargetByIDResult: &types.Target{
 			ID:                "parentTarget.target1",
 			Status:            0,
 			StatusDescription: "Not done",
 		},
 		UpdateTargetStatusError: errors.New("Connection error"),
-	})
+	}
+	r := Create(&dbMock).Serve()
 	targetPatch := gin.H{"status": 100, "statusDescription": "Done"}
 	w, _ := testutil.MakeRequest(http.MethodPatch, "/targets/parentTarget.target1", targetPatch, r)
 

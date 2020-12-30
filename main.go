@@ -22,7 +22,8 @@ func printHelp() {
 func processArgs(apiObj *api.API, cliObj *cli.CommandLine) {
 	switch os.Args[1] {
 	case "server":
-		apiObj.Serve()
+		g := apiObj.Serve()
+		g.Run()
 	default:
 		cliObj.Process()
 	}
