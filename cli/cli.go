@@ -14,6 +14,7 @@ type CommandLine struct {
 // Create an instance of the CLI object
 func Create(db storage.Provider, log *logr.Logger) *CommandLine {
 	result := CommandLine{db, log}
+	result.log.Debug("Created CommandLine instance.")
 	return &result
 }
 
@@ -21,6 +22,6 @@ func Create(db storage.Provider, log *logr.Logger) *CommandLine {
 func (c *CommandLine) Process(args []string) {
 	switch args[1] {
 	case "apply":
-		c.log.Infof("apply")
+		c.Apply(args[2], ApplyOptions{})
 	}
 }
