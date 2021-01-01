@@ -19,14 +19,32 @@ func printHelp() {
 	fmt.Println("Usage:")
 }
 
-func processArgs(apiObj *api.API, cliObj *cli.CommandLine) {
+func processArgs(apiObj *api.API, cliObj *cli.CommandLine, logObj *logr.Logger) {
 	switch os.Args[1] {
 	case "server":
 		g := apiObj.Serve()
 		g.Run()
 	default:
-		cliObj.Process()
+		cliObj.Process(os.Args)
 	}
+}
+
+// StringListContains tells whether a contains x.
+func StringListContains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
+}
+
+func createLog() *logr.Logger {
+	result := logr.New()
+	result.SetFormatter(&LogFormatter{
+		ShowDate: StringListContains(os.Args, "--format-include-timestamps"),
+	})
+	return result
 }
 
 /*
@@ -34,8 +52,8 @@ func processArgs(apiObj *api.API, cliObj *cli.CommandLine) {
 */
 func main() {
 	gin.SetMode(gin.ReleaseMode)
-	std := logr.StandardLogger()
-	std.SetOutput(ioutil.Discard)
+	fxlog := logr.New()
+	fxlog.SetOutput(ioutil.Discard)
 
 	fmt.Println("spyglass", VERSION)
 	if len(os.Args) < 2 {
@@ -43,9 +61,10 @@ func main() {
 		os.Exit(0)
 	}
 	fx.New(
-		fx.Logger(std),
+		fx.Logger(fxlog),
 		fx.Provide(
 			storage.CreateProviderFromConf,
+			createLog,
 			api.Create,
 			cli.Create,
 		),
