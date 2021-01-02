@@ -11,8 +11,9 @@ type ApplyOptions struct {
 }
 
 // Apply the configuration in the given directory.
-func (o *ApplyOptions) Apply(c *CommandLineContext) {
+func (o *ApplyOptions) Apply(c *CommandLineContext) func(...string) error {
 	c.Log.Debug("Executing apply.")
+	return nil
 }
 
 // GetFlags for the current command.

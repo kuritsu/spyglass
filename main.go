@@ -29,7 +29,10 @@ func processArgs(cliObj *commands.CommandLineContext, logObj *logr.Logger) {
 	logObj.Println("Setting log level to", options.LogLevel)
 	logObj.SetLevel(options.LogLevelInt)
 
-	options.Action.Apply(cliObj)
+	f := options.Action.Apply(cliObj)
+	if f != nil {
+		f()
+	}
 }
 
 // StringListContains tells whether a contains x.
