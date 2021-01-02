@@ -19,14 +19,3 @@ func TestCommandLine(t *testing.T) {
 	assert.Len(t, hook.AllEntries(), 1)
 	assert.Contains(t, hook.AllEntries()[0].Message, "Created CommandLine instance.")
 }
-
-func TestCommandLineApply(t *testing.T) {
-	logger, hook := test.NewNullLogger()
-	logger.SetLevel(logrus.DebugLevel)
-	c := CreateContext(&testutil.StorageMock{}, logger)
-
-	c.Process(&Options{Action: "apply"})
-
-	entries := hook.AllEntries()
-	assert.Contains(t, entries[len(entries)-1].Message, "Executing apply")
-}

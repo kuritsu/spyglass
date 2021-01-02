@@ -10,6 +10,7 @@ import (
 
 	"github.com/kuritsu/spyglass/api/testutil"
 	"github.com/kuritsu/spyglass/api/types"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ func TestMonitorGet(t *testing.T) {
 			ID: "mymonitor",
 		},
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors/mymonitor", nil, r)
 
 	var monitor types.Monitor
@@ -32,7 +33,7 @@ func TestMonitorGet(t *testing.T) {
 
 func TestMonitorGetNotFound(t *testing.T) {
 	dbMock := testutil.StorageMock{}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	w, _ := testutil.MakeRequest(http.MethodGet, "/monitors/mymonitor", nil, r)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
@@ -42,7 +43,7 @@ func TestMonitorGetDbError(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		GetMonitorByIDError: errors.New("Connection error"),
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	w, _ := testutil.MakeRequest(http.MethodGet, "/monitors/mymonitor", nil, r)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
@@ -56,7 +57,7 @@ func TestMonitorGetAll(t *testing.T) {
 			{ID: "3"},
 		},
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors", nil, r)
 
 	var monitors []types.Monitor
@@ -73,7 +74,7 @@ func TestMonitorGetAllWithPageSize(t *testing.T) {
 			{ID: "2"},
 		},
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?pageSize=1&pageIndex=0", nil, r)
 
 	var monitors []types.Monitor
@@ -87,7 +88,7 @@ func TestMonitorGetAllEmptyList(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		GetAllMonitorsResult: []types.Monitor{},
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors", nil, r)
 
 	var monitors []types.Monitor
@@ -103,14 +104,14 @@ func TestMonitorGetAllWithDbError(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		GetAllMonitorsError: errors.New("Connection error"),
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	w, _ := testutil.MakeRequest(http.MethodGet, "/monitors", nil, r)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestMonitorGetAllWithInvalidPageSize(t *testing.T) {
-	r := Create(&testutil.StorageMock{}).Serve()
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?pageSize=asd", nil, r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -118,7 +119,7 @@ func TestMonitorGetAllWithInvalidPageSize(t *testing.T) {
 }
 
 func TestMonitorGetAllWithInvalidPageIndex(t *testing.T) {
-	r := Create(&testutil.StorageMock{}).Serve()
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?pageIndex=asd", nil, r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -126,7 +127,7 @@ func TestMonitorGetAllWithInvalidPageIndex(t *testing.T) {
 }
 
 func TestMonitorGetAllWithInvalidContains(t *testing.T) {
-	r := Create(&testutil.StorageMock{}).Serve()
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
 	w, jsonBytes := testutil.MakeRequest(http.MethodGet, "/monitors?contains=a,sd", nil, r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -134,7 +135,7 @@ func TestMonitorGetAllWithInvalidContains(t *testing.T) {
 }
 
 func TestMonitorPost(t *testing.T) {
-	r := Create(&testutil.StorageMock{}).Serve()
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
 	monitor := getValidMonitor()
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
 
@@ -142,7 +143,7 @@ func TestMonitorPost(t *testing.T) {
 }
 
 func TestMonitorPostInvalidMonitor(t *testing.T) {
-	r := Create(&testutil.StorageMock{}).Serve()
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
 	w, _ := testutil.MakeRequest(http.MethodPost, "/monitors", "", r)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
@@ -152,7 +153,7 @@ func TestMonitorPostDbError(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		InsertMonitorError: errors.New("Connection error"),
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	monitor := getValidMonitor()
 	w, _ := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
 
@@ -163,7 +164,7 @@ func TestMonitorPostErrorDuplicate(t *testing.T) {
 	dbMock := testutil.StorageMock{
 		InsertMonitorError: errors.New("Duplicate"),
 	}
-	r := Create(&dbMock).Serve()
+	r := Create(&dbMock, logrus.New()).Serve()
 	monitor := getValidMonitor()
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
 
@@ -172,7 +173,7 @@ func TestMonitorPostErrorDuplicate(t *testing.T) {
 }
 
 func TestMonitorPostErrorInvalidID(t *testing.T) {
-	r := Create(&testutil.StorageMock{}).Serve()
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
 	monitor := getValidMonitor()
 	monitor.ID = "/monitor"
 	w, jsonBytes := testutil.MakeRequest(http.MethodPost, "/monitors", monitor, r)
