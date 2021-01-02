@@ -16,6 +16,7 @@ type Options struct {
 	LogLevel                string
 	LogLevelInt             logr.Level
 	OutputIncludeTimestamps bool
+	Help                    bool
 }
 
 var logLevelNames = map[string]logr.Level{
@@ -37,6 +38,7 @@ func defineGlobalFlags(fs *flag.FlagSet, opts *Options) {
 		"ts", false, "Include timestamps on output.")
 	fs.StringVar(&opts.LogLevel,
 		"v", "INFO", "Verbosity. Possible values: FATAL, ERROR, WARN, INFO, DEBUG.")
+	fs.BoolVar(&opts.Help, "h", false, "Help.")
 }
 
 func printGlobalHelp(fs *flag.FlagSet) {
@@ -74,7 +76,14 @@ func GetOptions(args []string) (*Options, error) {
 
 	actionFlags := result.Action.GetFlags()
 	defineGlobalFlags(actionFlags, &result)
-	result.Action.GetFlags().Parse(args[1:])
+	actionFlags.Parse(args[1:])
+	if result.Help {
+		fmt.Println("Usage:")
+		fmt.Println("  spyglass", args[0], "[flags]")
+		fmt.Println("\nFlags:")
+		result.Action.GetFlags().PrintDefaults()
+		os.Exit(0)
+	}
 
 	level, ok := logLevelNames[result.LogLevel]
 	if !ok {
