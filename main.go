@@ -9,24 +9,27 @@ import (
 	logr "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kuritsu/spyglass/api"
 	"github.com/kuritsu/spyglass/api/storage"
 	"github.com/kuritsu/spyglass/cli"
+	"github.com/kuritsu/spyglass/cli/commands"
 	"go.uber.org/fx"
 )
 
-func printHelp() {
-	fmt.Println("Usage:")
-}
-
-func processArgs(apiObj *api.API, cliObj *cli.CommandLine, logObj *logr.Logger) {
-	switch os.Args[1] {
-	case "server":
-		g := apiObj.Serve()
-		g.Run()
-	default:
-		cliObj.Process(os.Args)
+func processArgs(cliObj *commands.CommandLineContext, logObj *logr.Logger) {
+	options, err := cli.GetOptions(os.Args[1:])
+	logObj.SetLevel(logr.InfoLevel)
+	logObj.SetFormatter(&LogFormatter{
+		ShowDate: err == nil && options.OutputIncludeTimestamps || false,
+	})
+	if err != nil {
+		logObj.Fatal(err)
+		os.Exit(1)
 	}
+
+	logObj.Println("Setting log level to", options.LogLevel)
+	logObj.SetLevel(options.LogLevelInt)
+
+	options.Action.Apply(cliObj)
 }
 
 // StringListContains tells whether a contains x.
@@ -41,9 +44,6 @@ func StringListContains(a []string, x string) bool {
 
 func createLog() *logr.Logger {
 	result := logr.New()
-	result.SetFormatter(&LogFormatter{
-		ShowDate: StringListContains(os.Args, "--format-include-timestamps"),
-	})
 	return result
 }
 
@@ -56,17 +56,12 @@ func main() {
 	fxlog.SetOutput(ioutil.Discard)
 
 	fmt.Println("spyglass", VERSION)
-	if len(os.Args) < 2 {
-		printHelp()
-		os.Exit(0)
-	}
 	fx.New(
 		fx.Logger(fxlog),
 		fx.Provide(
 			storage.CreateProviderFromConf,
 			createLog,
-			api.Create,
-			cli.Create,
+			commands.CreateContext,
 		),
 		fx.Invoke(processArgs),
 	)

@@ -1,4 +1,4 @@
-package cli
+package commands
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ import (
 func TestCommandLine(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.DebugLevel)
-	c := Create(&testutil.StorageMock{}, logger)
+	c := CreateContext(&testutil.StorageMock{}, logger)
 
 	assert.NotNil(t, c)
 	assert.NotNil(t, hook.AllEntries())
@@ -23,9 +23,9 @@ func TestCommandLine(t *testing.T) {
 func TestCommandLineApply(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.DebugLevel)
-	c := Create(&testutil.StorageMock{}, logger)
+	c := CreateContext(&testutil.StorageMock{}, logger)
 
-	c.Process([]string{"spyglass", "apply", "."})
+	c.Process(&Options{Action: "apply"})
 
 	entries := hook.AllEntries()
 	assert.Contains(t, entries[len(entries)-1].Message, "Executing apply")

@@ -2,23 +2,30 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	logr "github.com/sirupsen/logrus"
+
 	"github.com/kuritsu/spyglass/api/storage"
 )
 
 // API is the API object
 type API struct {
-	db storage.Provider
+	db  storage.Provider
+	log *logr.Logger
 }
 
 // Create is the API host
-func Create(db storage.Provider) *API {
-	result := API{db}
+func Create(db storage.Provider, log *logr.Logger) *API {
+	result := API{db, log}
 	return &result
 }
 
 // Serve the API
 func (api *API) Serve() *gin.Engine {
-	gin.SetMode(gin.DebugMode)
+	if api.log.Level == logr.DebugLevel {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r := gin.Default()
 	monitors := MonitorController{}
 	targets := TargetController{}

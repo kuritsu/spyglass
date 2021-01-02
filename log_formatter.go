@@ -29,5 +29,5 @@ func (l *LogFormatter) Format(entry *logr.Entry) ([]byte, error) {
 	if l.ShowDate {
 		date = entry.Time.Format(time.RFC3339) + " "
 	}
-	return []byte(fmt.Sprintf("%s%s%s", date, level, entry.Message)), nil
+	return []byte(fmt.Sprintf("%s%s%s\n", date, level, entry.Message)), nil
 }
