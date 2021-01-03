@@ -40,14 +40,14 @@ func (p *MongoDB) Init() {
 	// TODO: Change this to a transaction
 	client, err := mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
-		p.Log.Fatal("Failed to create client: %v", err)
+		p.Log.Fatalf("Failed to create client: %v", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), connectTimeout*time.Second)
 
 	err = client.Connect(ctx)
 	if err != nil {
-		p.Log.Fatal("Failed to connect to cluster: %v", err)
+		p.Log.Fatalf("Failed to connect to cluster: %v", err)
 	}
 
 	p.client = client
@@ -61,7 +61,7 @@ func (p *MongoDB) Init() {
 	// Force a connection to verify our connection string
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		p.Log.Fatal("Failed to ping cluster: %v", err)
+		p.Log.Fatalf("Failed to ping cluster: %v", err)
 	}
 
 	p.Log.Info("Connected to MongoDB!")
@@ -170,7 +170,7 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 	_, err := p.client.Database("spyglass").Collection("Monitors").InsertOne(
 		p.context, monitor)
 	if err != nil {
-		p.Log.Error("Could not create Monitor: %v", err)
+		p.Log.Errorf("Could not create Monitor: %v", err)
 		return nil, err
 	}
 	return monitor, nil
