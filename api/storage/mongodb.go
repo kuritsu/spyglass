@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/kuritsu/spyglass/api/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,6 +23,7 @@ const (
 
 // MongoDB provider
 type MongoDB struct {
+	Log         *logrus.Logger
 	initialized bool
 	client      *mongo.Client
 	context     context.Context
@@ -33,20 +34,20 @@ type MongoDB struct {
 func (p *MongoDB) Init() {
 	connectionString := os.Getenv("MONGODB_CONNECTIONSTRING")
 	if connectionString == "" {
-		log.Fatalln("ERROR: No MongoDB connection string provided. (MONGODB_CONNECTIONSTRING)")
+		p.Log.Fatal("ERROR: No MongoDB connection string provided. (MONGODB_CONNECTIONSTRING)")
 	}
 
 	// TODO: Change this to a transaction
 	client, err := mongo.NewClient(options.Client().ApplyURI(connectionString))
 	if err != nil {
-		log.Printf("Failed to create client: %v", err)
+		p.Log.Fatal("Failed to create client: %v", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), connectTimeout*time.Second)
 
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Printf("Failed to connect to cluster: %v", err)
+		p.Log.Fatal("Failed to connect to cluster: %v", err)
 	}
 
 	p.client = client
@@ -60,17 +61,17 @@ func (p *MongoDB) Init() {
 	// Force a connection to verify our connection string
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Printf("Failed to ping cluster: %v", err)
+		p.Log.Fatal("Failed to ping cluster: %v", err)
 	}
 
-	fmt.Println("Connected to MongoDB!")
+	p.Log.Info("Connected to MongoDB!")
 
 	p.createIndexes()
 	p.initialized = true
 }
 
 func (p *MongoDB) createIndexes() {
-	log.Println("Creating collection indexes...")
+	p.Log.Println("Creating collection indexes...")
 	monitorIndexes := []mongo.IndexModel{
 		{
 			Keys:    bson.M{"id": 1},
@@ -169,7 +170,7 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 	_, err := p.client.Database("spyglass").Collection("Monitors").InsertOne(
 		p.context, monitor)
 	if err != nil {
-		log.Printf("Could not create Monitor: %v", err)
+		p.Log.Error("Could not create Monitor: %v", err)
 		return nil, err
 	}
 	return monitor, nil
@@ -219,11 +220,11 @@ func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 	target.UpdatedAt = time.Now()
 	col := p.client.Database("spyglass").Collection("Targets")
 	if _, err := col.InsertOne(p.context, target); err != nil {
-		log.Printf("Could not create Target: %v", err)
+		p.Log.Errorf("Could not create Target: %v", err)
 		return nil, err
 	}
 	if err := p.updateParentStatus(target, 1, target.Status); err != nil {
-		log.Printf("Error updating parents: %v", err)
+		p.Log.Errorf("Error updating parents: %v", err)
 		return nil, err
 	}
 	return target, nil
@@ -263,21 +264,21 @@ func (p *MongoDB) updateParentStatus(target *types.Target, childrenCount int, st
 	if len(parents) < 2 {
 		return nil
 	}
-	log.Println(len(parents)-1, " parents need update.")
+	p.Log.Debug(len(parents)-1, " parents need update.")
 	col := p.client.Database("spyglass").Collection("Targets")
 	parentIds := []string{}
 	prefix := ""
-	for idx, p := range parents[0 : len(parents)-1] {
+	for idx, parent := range parents[0 : len(parents)-1] {
 		if idx > 0 {
 			prefix = parentIds[idx-1] + "."
 		}
-		parentIds = append(parentIds, prefix+p)
-		log.Println(parentIds[idx])
+		parentIds = append(parentIds, prefix+parent)
+		p.Log.Debug(parentIds[idx])
 	}
 	updateResult, err := col.UpdateMany(p.context,
 		bson.M{"id": bson.M{"$in": parentIds}},
 		bson.M{"$inc": bson.M{"childrenCount": childrenCount, "statusTotal": statusInc}})
-	log.Println(updateResult)
+	p.Log.Debug(updateResult)
 	return err
 }
 

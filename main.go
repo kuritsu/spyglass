@@ -30,9 +30,13 @@ func processArgs(cliObj *commands.CommandLineContext, logObj *logr.Logger) {
 	logObj.Println("Setting log level to", options.LogLevel)
 	logObj.SetLevel(options.LogLevelInt)
 
-	f := options.Action.Apply(cliObj)
-	if f != nil {
-		f()
+	runner := options.Action.Apply(cliObj)
+	if runner != nil {
+		err = runner.Run()
+		if err != nil {
+			logObj.Error(err)
+			os.Exit(1)
+		}
 	}
 }
 

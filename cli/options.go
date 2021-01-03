@@ -78,10 +78,7 @@ func GetOptions(args []string) (*Options, error) {
 	defineGlobalFlags(actionFlags, &result)
 	actionFlags.Parse(args[1:])
 	if result.Help {
-		fmt.Println("Usage:")
-		fmt.Println("  spyglass", args[0], "[flags]")
-		fmt.Println("\nFlags:")
-		result.Action.GetFlags().PrintDefaults()
+		result.Action.GetFlags().Usage()
 		os.Exit(0)
 	}
 

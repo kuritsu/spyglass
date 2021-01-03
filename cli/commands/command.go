@@ -1,10 +1,14 @@
 package commands
 
-import "flag"
+import (
+	"flag"
+
+	"github.com/kuritsu/spyglass/cli/runner"
+)
 
 // Command represents a CLI command
 type Command interface {
 	GetFlags() *flag.FlagSet
-	Apply(*CommandLineContext) func(...string) error
+	Apply(*CommandLineContext) runner.Runner
 	Description() string
 }
