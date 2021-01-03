@@ -12,6 +12,7 @@ import (
 	"github.com/kuritsu/spyglass/api/storage"
 	"github.com/kuritsu/spyglass/cli"
 	"github.com/kuritsu/spyglass/cli/commands"
+	"github.com/kuritsu/spyglass/sgc"
 	"go.uber.org/fx"
 )
 
@@ -65,6 +66,9 @@ func main() {
 			storage.CreateProviderFromConf,
 			createLog,
 			commands.CreateContext,
+			func() sgc.Manager {
+				return &sgc.FileManager{}
+			},
 		),
 		fx.Invoke(processArgs),
 	)

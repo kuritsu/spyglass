@@ -10,12 +10,6 @@ type ApplyOptions struct {
 	Recursive bool
 }
 
-// Apply the configuration in the given directory.
-func (o *ApplyOptions) Apply(c *CommandLineContext) func(...string) error {
-	c.Log.Debug("Executing apply.")
-	return nil
-}
-
 // GetFlags for the current command.
 func (o *ApplyOptions) GetFlags() *flag.FlagSet {
 	return o.flagSet
@@ -32,4 +26,10 @@ func ApplyFlags() *ApplyOptions {
 	result := ApplyOptions{flagSet: fs}
 	fs.BoolVar(&result.Recursive, "r", false, "Scan specified path recursively for config files.")
 	return &result
+}
+
+// Apply the configuration in the given directory.
+func (o *ApplyOptions) Apply(c *CommandLineContext) func(...string) error {
+	c.Log.Debug("Executing apply.")
+	return nil
 }
