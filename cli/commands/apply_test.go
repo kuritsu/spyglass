@@ -28,7 +28,7 @@ func TestApply(t *testing.T) {
 	mockLog, hook := test.NewNullLogger()
 	mockLog.SetLevel(logrus.DebugLevel)
 	sgcManager := mocks.SgcManagerMock{
-		GetFilesResult: []sgc.File{{}, {}, {}},
+		GetFilesResult: []*sgc.File{{}, {}, {}},
 	}
 	r := s.Apply(&CommandLineContext{Db: &testutil.StorageMock{}, Log: mockLog, SgcManager: &sgcManager})
 

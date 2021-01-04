@@ -50,7 +50,7 @@ func (o *ApplyOptions) Apply(c *CommandLineContext) runner.Runner {
 			Logger:  c.Log,
 		}
 	}
-	fileList := []sgc.File{}
+	fileList := []*sgc.File{}
 	for _, d := range dirs {
 		files, err := c.SgcManager.GetFiles(d, o.Recursive)
 		if err != nil {

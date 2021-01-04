@@ -188,7 +188,7 @@ func assertValidMonitorCreated(t *testing.T, w *httptest.ResponseRecorder, jsonB
 
 	assert.Equal(t, nil, merr)
 	assert.Equal(t, w.Code, http.StatusCreated)
-	assert.NotEqual(t, newMonitor.CreatedAt, time.Time{})
+	assert.NotEqual(t, newMonitor.Permissions.CreatedAt, time.Time{})
 }
 
 func getValidMonitor() *types.Monitor {
@@ -196,8 +196,8 @@ func getValidMonitor() *types.Monitor {
 		ID:       "monitors.mymonitor-1",
 		Type:     "docker",
 		Schedule: "* * * * *",
-		Definition: types.MonitorDefinition{
-			DockerDefinition: types.DockerDefinition{
+		Definition: &types.MonitorDefinition{
+			Docker: &types.DockerDefinition{
 				Image: "nginx:latest",
 				DockerEnv: map[string]string{
 					"val1": "val2",
