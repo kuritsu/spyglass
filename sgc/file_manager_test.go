@@ -1,6 +1,7 @@
 package sgc
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ func TestParseConfigNoFilesRead(t *testing.T) {
 	assert.Equal(t, "No files read", errors[0].Error())
 }
 
-func TestParseConfigWithFiles(t *testing.T) {
+func TestParseConfigWithValidFile(t *testing.T) {
 	m := FileManager{}
 	files, err := m.GetFiles("./e2e/file.hcl", false)
 	assert.Nil(t, err)
@@ -42,6 +43,15 @@ func TestParseConfigWithFiles(t *testing.T) {
 	errors := m.ParseConfig()
 	assert.Nil(t, errors)
 	assert.NotNil(t, files[0].Config)
+	assert.Len(t, files[0].Config.Monitors, 1)
+	assert.NotNil(t, files[0].Config.Monitors[0].Definition.Docker)
+	assert.NotNil(t, files[0].Config.Monitors[0].Definition.Docker.DockerEnv["var1"])
+
+	assert.Len(t, files[0].Config.Targets, 1)
+	assert.Len(t, files[0].Config.Targets[0].Writers, 1)
+	assert.NotNil(t, files[0].Config.Targets[0].Monitor)
+	assert.Contains(t, files[0].Config.Targets[0].View.ImageBig, "big")
+	fmt.Println(files[0].Config.Targets[0])
 }
 
 func TestParseConfigWithErrorsRecursively(t *testing.T) {
