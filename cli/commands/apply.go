@@ -29,10 +29,10 @@ func (o *ApplyOptions) Description() string {
 func ApplyFlags() *ApplyOptions {
 	fs := flag.NewFlagSet("apply", flag.ContinueOnError)
 	result := ApplyOptions{flagSet: fs}
-	fs.BoolVar(&result.Recursive, "r", false, "Scan specified path recursively for config files.")
+	fs.BoolVar(&result.Recursive, "r", false, "Scan specified paths recursively for config files.")
 	fs.Usage = func() {
 		fmt.Println("Usage:")
-		fmt.Println("  spyglass apply [flags] dir1 [dir2] ...")
+		fmt.Println("  spyglass apply [flags] path1 [path2] ...")
 		fmt.Println("\nFlags:")
 		fs.PrintDefaults()
 	}
@@ -42,16 +42,16 @@ func ApplyFlags() *ApplyOptions {
 // Apply the configuration in the given directory.
 func (o *ApplyOptions) Apply(c *CommandLineContext) runner.Runner {
 	c.Log.Debug("Executing apply.")
-	dirs := o.flagSet.Args()
-	if len(dirs) == 0 {
+	paths := o.flagSet.Args()
+	if len(paths) == 0 {
 		return &runner.ExitError{
-			Error:   errors.New("Invalid number of directories"),
+			Error:   errors.New("A path is required"),
 			FlagSet: o.flagSet,
 			Logger:  c.Log,
 		}
 	}
 	fileList := []*sgc.File{}
-	for _, d := range dirs {
+	for _, d := range paths {
 		files, err := c.SgcManager.GetFiles(d, o.Recursive)
 		if err != nil {
 			c.Log.Error(err)

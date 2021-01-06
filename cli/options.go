@@ -17,6 +17,7 @@ type Options struct {
 	LogLevelInt             logr.Level
 	OutputIncludeTimestamps bool
 	Help                    bool
+	APIAddress              string
 }
 
 var logLevelNames = map[string]logr.Level{
@@ -34,6 +35,8 @@ var CommandList = map[string]commands.Command{
 }
 
 func defineGlobalFlags(fs *flag.FlagSet, opts *Options) {
+	fs.StringVar(&opts.APIAddress,
+		"api", "http://localhost:8010", "Spyglass API address. Environment: SPYGLASS_API.")
 	fs.BoolVar(&opts.OutputIncludeTimestamps,
 		"ts", false, "Include timestamps on output.")
 	fs.StringVar(&opts.LogLevel,

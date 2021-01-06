@@ -55,7 +55,7 @@ func TestApplyWithNoDirs(t *testing.T) {
 
 	assert.NotNil(t, r)
 	exitError := r.(*runner.ExitError)
-	assert.Contains(t, exitError.Error.Error(), "Invalid number of directories")
+	assert.Contains(t, exitError.Error.Error(), "A path is required")
 	assert.NotNil(t, exitError.FlagSet)
 	exitError.FlagSet.Usage()
 }

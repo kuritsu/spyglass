@@ -1,5 +1,5 @@
 ### Create parent target
-POST http://localhost:8080/targets
+POST http://localhost:8010/targets
 Content-Type: application/json
 
 {
@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ### Create parent target
-POST http://localhost:8080/targets
+POST http://localhost:8010/targets
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 
 ### Create child target
-POST http://localhost:8080/targets
+POST http://localhost:8010/targets
 Content-Type: application/json
 
 {
@@ -40,7 +40,7 @@ Content-Type: application/json
 }
 
 ### Create child2 target
-POST http://localhost:8080/targets
+POST http://localhost:8010/targets
 Content-Type: application/json
 
 {
@@ -53,7 +53,7 @@ Content-Type: application/json
 }
 
 ### Create child3 target
-POST http://localhost:8080/targets
+POST http://localhost:8010/targets
 Content-Type: application/json
 
 {
@@ -66,7 +66,7 @@ Content-Type: application/json
 }
 
 ### Create child 3rd level target
-POST http://localhost:8080/targets
+POST http://localhost:8010/targets
 Content-Type: application/json
 
 {
@@ -78,14 +78,14 @@ Content-Type: application/json
 }
 
 ### Get the child target
-GET http://localhost:8080/targets/mytargets
+GET http://localhost:8010/targets/mytargets
 
 
 ### Get the child target
-GET http://localhost:8080/targets?pageSize=4&pageIndex=0&contains=mytarget
+GET http://localhost:8010/targets?pageSize=4&pageIndex=0&contains=mytarget
 
 ### Patch a target
-PATCH http://localhost:8080/targets/mytargets.mytarget-1
+PATCH http://localhost:8010/targets/mytargets.mytarget-1
 Content-Type: application/json
 
 {

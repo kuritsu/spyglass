@@ -10,6 +10,7 @@ import (
 // ServerOptions according to arguments
 type ServerOptions struct {
 	flagSet *flag.FlagSet
+	Address string
 }
 
 // GetFlags for the current command.
@@ -26,6 +27,7 @@ func (o *ServerOptions) Description() string {
 func ServerFlags() *ServerOptions {
 	fs := flag.NewFlagSet("server", flag.ContinueOnError)
 	result := ServerOptions{flagSet: fs}
+	fs.StringVar(&result.Address, "a", "127.0.0.1:8010", "API exposed address (Use 0.0.0.0:port for fully open).")
 	return &result
 }
 
@@ -35,6 +37,7 @@ func (o *ServerOptions) Apply(c *CommandLineContext) runner.Runner {
 	apiObj := api.Create(c.Db, c.Log)
 	s := apiObj.Serve()
 	return &runner.Gin{
-		Engine: s,
+		Engine:  s,
+		Address: o.Address,
 	}
 }
