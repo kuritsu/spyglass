@@ -3,6 +3,7 @@ package sgc
 import (
 	"errors"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -21,9 +22,16 @@ func (manager *FileManager) GetFiles(dir string, recursive bool) ([]*File, error
 
 // readFiles in the directory specified, recursively or not.
 func (manager *FileManager) readFiles(dir string, recursive bool) ([]*File, error) {
-	fpath, perr := filepath.Abs(dir)
-	if perr != nil {
-		return nil, perr
+	fpath, _ := filepath.Abs(dir)
+	info, err := os.Stat(fpath)
+	if err != nil {
+		return nil, err
+	}
+	if !info.IsDir() {
+		return []*File{{
+			File:     info,
+			FullPath: fpath,
+		}}, nil
 	}
 	list, err := ioutil.ReadDir(fpath)
 	if err != nil {
