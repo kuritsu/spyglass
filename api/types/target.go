@@ -52,3 +52,18 @@ func GetIDForRegex(id string) string {
 	id = strings.ToLower(id)
 	return strings.ReplaceAll(strings.ReplaceAll(id, ".", `\.`), "-", `\-`)
 }
+
+// TargetList for sorting targets by ID
+type TargetList []*Target
+
+func (s TargetList) Len() int {
+	return len(s)
+}
+
+func (s TargetList) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s TargetList) Less(i, j int) bool {
+	return strings.ToLower(s[i].ID) < strings.ToLower(s[j].ID)
+}

@@ -17,6 +17,9 @@ type ExitError struct {
 // Run engine.
 func (e *ExitError) Run() error {
 	if e.FlagSet == nil {
+		if e.Error == nil {
+			os.Exit(1)
+		}
 		return e.Error
 	}
 	e.Logger.Error(e.Error)
