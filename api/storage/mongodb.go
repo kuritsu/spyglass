@@ -263,15 +263,16 @@ func (p *MongoDB) UpdateTargetStatus(target *types.Target, targetPatch *types.Ta
 func (p *MongoDB) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
 	forceStatusUpdate bool) (*types.Target, error) {
 	col := p.client.Database("spyglass").Collection("Targets")
+	newTarget.Permissions.CreatedAt = oldTarget.CreatedAt
+	newTarget.Permissions.UpdatedAt = time.Now()
+	newTarget.Permissions.Owner = oldTarget.Owner
 	updateProps := bson.M{
 		"critical":    newTarget.Critical,
 		"description": newTarget.Description,
 		"monitor":     newTarget.Monitor,
-		"readers":     newTarget.Readers,
-		"updatedAt":   time.Now(),
+		"permissions": newTarget.Permissions,
 		"url":         newTarget.URL,
 		"view":        newTarget.View,
-		"writers":     newTarget.Writers,
 	}
 	if forceStatusUpdate {
 		lockedDoc := col.FindOneAndUpdate(p.context, bson.M{"id": oldTarget.ID},
@@ -290,8 +291,6 @@ func (p *MongoDB) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
 	if err != nil {
 		return nil, err
 	}
-	newTarget.CreatedAt = oldTarget.CreatedAt
-	newTarget.Owner = oldTarget.Owner
 	return newTarget, nil
 }
 

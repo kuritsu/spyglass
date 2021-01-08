@@ -33,7 +33,7 @@ func TestApply(t *testing.T) {
 	sgcManager := getGoodSgcManager()
 	caller := &client.CallerMock{}
 	caller.On("InsertOrUpdateMonitor", mock.Anything).Return(nil)
-	caller.On("InsertOrUpdateTarget", mock.Anything).Return(nil)
+	caller.On("InsertOrUpdateTarget", mock.Anything, false).Return(nil)
 	r := s.Apply(&CommandLineContext{
 		Db:         &testutil.StorageMock{},
 		Log:        mockLog,
@@ -144,7 +144,7 @@ func TestApplyApplyTargetConfigsError(t *testing.T) {
 	sgcManager := getGoodSgcManager()
 	caller := &client.CallerMock{}
 	caller.On("InsertOrUpdateMonitor", mock.Anything).Return(nil)
-	caller.On("InsertOrUpdateTarget", mock.Anything).Return(errors.New("Invalid target"))
+	caller.On("InsertOrUpdateTarget", mock.Anything, false).Return(errors.New("Invalid target"))
 	errFunc := s.Apply(&CommandLineContext{
 		Db:         &testutil.StorageMock{},
 		Log:        mockLog,

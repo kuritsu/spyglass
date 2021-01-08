@@ -6,5 +6,5 @@ import "github.com/kuritsu/spyglass/api/types"
 type APICaller interface {
 	Init(string)
 	InsertOrUpdateMonitor(*types.Monitor) error
-	InsertOrUpdateTarget(*types.Target) error
+	InsertOrUpdateTarget(*types.Target, bool) error
 }

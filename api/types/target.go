@@ -4,15 +4,15 @@ import "strings"
 
 // View for targets
 type View struct {
-	ImageBig   string `json:"imageBig,omitempty" hcl:"image_big,optional"`
-	ImageSmall string `json:"imageSmall,omitempty" hcl:"image_small,optional"`
-	ColorBig   string `json:"colorBig,omitempty" hcl:"color_big,optional"`
-	ColorSmall string `json:"colorSmall,omitempty" hcl:"color_small,optional"`
+	ImageBig   string `json:"imageBig,omitempty" bson:"imageBig,omitempty" hcl:"image_big,optional"`
+	ImageSmall string `json:"imageSmall,omitempty" bson:"imageSmall,omitempty" hcl:"image_small,optional"`
+	ColorBig   string `json:"colorBig,omitempty" bson:"colorBig,omitempty" hcl:"color_big,optional"`
+	ColorSmall string `json:"colorSmall,omitempty" bson:"colorSmall,omitempty" hcl:"color_small,optional"`
 }
 
 // MonitorRef is a reference to an existing monitor
 type MonitorRef struct {
-	MonitorID string            `json:"monitorId,omitempty" hcl:"monitor_id"`
+	MonitorID string            `json:"monitorId,omitempty" bson:"monitorId" hcl:"monitor_id"`
 	Params    map[string]string `json:"params,omitempty" bson:",omitempty" hcl:"params,optional"`
 }
 
@@ -23,7 +23,7 @@ type Target struct {
 	URL               string      `json:"url,omitempty" bson:",omitempty" hcl:"url,optional"`
 	View              *View       `json:"view,omitempty" bson:",omitempty" hcl:"view,block"`
 	Status            int         `json:"status" hcl:"status,optional"`
-	StatusDescription string      `json:"statusDescription,omitempty" bson:",omitempty" hcl:"status_description,optional"`
+	StatusDescription string      `json:"statusDescription,omitempty" bson:"statusDescription,omitempty" hcl:"status_description,optional"`
 	StatusTotal       int         `json:"-" bson:"statusTotal"`
 	Critical          bool        `json:"critical" hcl:"critical,optional"`
 	Monitor           *MonitorRef `json:"monitor,omitempty" bson:",omitempty" hcl:"monitor,block"`

@@ -20,7 +20,7 @@ func (c *CallerMock) InsertOrUpdateMonitor(monitor *types.Monitor) error {
 }
 
 // InsertOrUpdateTarget operation.
-func (c *CallerMock) InsertOrUpdateTarget(target *types.Target) error {
-	args := c.Called(target)
+func (c *CallerMock) InsertOrUpdateTarget(target *types.Target, forceStatusUpdate bool) error {
+	args := c.Called(target, forceStatusUpdate)
 	return args.Error(0)
 }

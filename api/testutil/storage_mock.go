@@ -10,6 +10,7 @@ import (
 // StorageMock is a mock for storage
 type StorageMock struct {
 	mock.Mock
+	// TODO: This needs to be migrated to testify/mock way
 	GetMonitorByIDResult    *types.Monitor
 	GetMonitorByIDError     error
 	GetAllMonitorsResult    []types.Monitor

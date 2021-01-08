@@ -14,10 +14,11 @@ import (
 
 // ApplyOptions according to arguments
 type ApplyOptions struct {
-	Recursive bool
-	c         *CommandLineContext
-	flagSet   *flag.FlagSet
-	fileList  []*sgc.File
+	Recursive         bool
+	ForceStatusUpdate bool
+	c                 *CommandLineContext
+	flagSet           *flag.FlagSet
+	fileList          []*sgc.File
 }
 
 // GetFlags for the current command.
@@ -35,6 +36,7 @@ func ApplyFlags() *ApplyOptions {
 	fs := flag.NewFlagSet("apply", flag.ContinueOnError)
 	result := ApplyOptions{flagSet: fs}
 	fs.BoolVar(&result.Recursive, "r", false, "Scan specified paths recursively for config files.")
+	fs.BoolVar(&result.ForceStatusUpdate, "fsu", false, "Forces the status update for targets.")
 	fs.Usage = func() {
 		fmt.Println("Usage:")
 		fmt.Println("  spyglass apply [flags] path1 [path2] ...")
@@ -126,7 +128,7 @@ func (o *ApplyOptions) applyAllMonitors(api client.APICaller, monitors []*types.
 func (o *ApplyOptions) applyAllTargets(api client.APICaller, targets types.TargetList) error {
 	sort.Sort(targets)
 	for _, m := range targets {
-		if err := api.InsertOrUpdateTarget(m); err != nil {
+		if err := api.InsertOrUpdateTarget(m, o.ForceStatusUpdate); err != nil {
 			return err
 		}
 	}

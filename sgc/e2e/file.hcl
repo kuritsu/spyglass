@@ -16,16 +16,31 @@ monitor "monitors.mymonitor2" {
 }
 
 target "target" {
-  description = "this is my target"
+  description = "this is my real target"
 	url = "https://mytarget.url"
 	view {
-    image_big = "http://mytarget.url/big"
+    image_big = "https://mytarget.url/big"
   }
-	status = 6
-	status_description = "Progress of task"
+	status = 55
+	status_description = "Progress of task is there"
 	critical = true
 	monitor {
     monitor_id = "monitors.mymonitor2"
   }
-	writers = ["user@email.com"]
+	writers = ["user2@email.com"]
 }
+
+# target "target" {
+#   description = "this is my target"
+# 	url = "https://mytarget2.url"
+# 	view {
+#     image_small = "http://mytarget.url/small"
+#   }
+# 	status = 14
+# 	status_description = "Progress of task"
+# 	critical = true
+# 	monitor {
+#     monitor_id = "monitors.mymonitor2"
+#   }
+# 	writers = ["user@email.com"]
+# }

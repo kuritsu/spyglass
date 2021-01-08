@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -39,7 +40,7 @@ func (c *APIClient) InsertOrUpdateMonitor(monitor *types.Monitor) error {
 		response, err = c.client.Post(fmt.Sprintf("%s/monitors", c.url), "application/json", reader)
 	case http.StatusOK:
 		c.log.Debug("Putting monitor ", monitor.ID)
-		request, err = http.NewRequest("PUT", fmt.Sprintf("%s/monitors", c.url), reader)
+		request, err = http.NewRequest("PUT", fmt.Sprintf("%s/monitors/%s", c.url, monitor.ID), reader)
 		response, err = c.client.Do(request)
 	}
 	if err != nil {
@@ -53,7 +54,7 @@ func (c *APIClient) InsertOrUpdateMonitor(monitor *types.Monitor) error {
 }
 
 // InsertOrUpdateTarget operation.
-func (c *APIClient) InsertOrUpdateTarget(target *types.Target) error {
+func (c *APIClient) InsertOrUpdateTarget(target *types.Target, forceStatusUpdate bool) error {
 	c.log.Debug("Getting target ", target.ID)
 	response, err := c.client.Get(fmt.Sprintf("%s/targets/%s", c.url, target.ID))
 	if err != nil {
@@ -68,12 +69,15 @@ func (c *APIClient) InsertOrUpdateTarget(target *types.Target) error {
 		response, err = c.client.Post(fmt.Sprintf("%s/targets", c.url), "application/json", reader)
 	case http.StatusOK:
 		c.log.Debug("Putting target ", target.ID)
-		request, err = http.NewRequest("PUT", fmt.Sprintf("%s/targets", c.url), reader)
+		request, _ = http.NewRequest(http.MethodPut,
+			fmt.Sprintf("%s/targets/%s?forceStatusUpdate=%v", c.url, target.ID, forceStatusUpdate), reader)
+		request.Header["Content-Type"] = []string{"application/json"}
 		response, err = c.client.Do(request)
 	}
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 	if response.StatusCode != http.StatusCreated &&
 		response.StatusCode != http.StatusOK {
 		return c.errorWithMessage(response)
@@ -89,9 +93,8 @@ func Create(log *logr.Logger) APICaller {
 }
 
 func (c *APIClient) errorWithMessage(response *http.Response) error {
-	var responseBytes []byte
-	response.Body.Read(responseBytes)
-	responseDict := map[string]string{}
-	json.Unmarshal(responseBytes, &responseDict)
-	return errors.New(responseDict["message"])
+	responseBytes, _ := ioutil.ReadAll(response.Body)
+	errorMsg := make(map[string]string)
+	json.Unmarshal(responseBytes, &errorMsg)
+	return errors.New(errorMsg["message"])
 }
