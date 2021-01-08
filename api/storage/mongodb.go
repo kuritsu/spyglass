@@ -259,6 +259,42 @@ func (p *MongoDB) UpdateTargetStatus(target *types.Target, targetPatch *types.Ta
 	return target, nil
 }
 
+// UpdateTarget with also a status update force flag.
+func (p *MongoDB) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
+	forceStatusUpdate bool) (*types.Target, error) {
+	col := p.client.Database("spyglass").Collection("Targets")
+	updateProps := bson.M{
+		"critical":    newTarget.Critical,
+		"description": newTarget.Description,
+		"monitor":     newTarget.Monitor,
+		"readers":     newTarget.Readers,
+		"updatedAt":   time.Now(),
+		"url":         newTarget.URL,
+		"view":        newTarget.View,
+		"writers":     newTarget.Writers,
+	}
+	if forceStatusUpdate {
+		lockedDoc := col.FindOneAndUpdate(p.context, bson.M{"id": oldTarget.ID},
+			bson.M{"$set": bson.M{"flock": bson.M{"pseudoRandom": primitive.NewObjectID()}}})
+		if lockedDoc.Err() != nil {
+			return nil, lockedDoc.Err()
+		}
+		lockedDoc.Decode(oldTarget)
+		updateProps["status"] = newTarget.Status
+		updateProps["statusDescription"] = newTarget.StatusDescription
+	}
+	_, err := col.UpdateOne(p.context, bson.M{"id": oldTarget.ID},
+		bson.M{"$set": updateProps})
+	diff := newTarget.Status - oldTarget.Status
+	err = p.updateParentStatus(newTarget, 0, diff)
+	if err != nil {
+		return nil, err
+	}
+	newTarget.CreatedAt = oldTarget.CreatedAt
+	newTarget.Owner = oldTarget.Owner
+	return newTarget, nil
+}
+
 func (p *MongoDB) updateParentStatus(target *types.Target, childrenCount int, statusInc int) error {
 	parents := strings.Split(target.ID, ".")
 	if len(parents) < 2 {

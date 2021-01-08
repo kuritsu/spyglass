@@ -180,6 +180,56 @@ func (t *TargetController) Patch(c *gin.Context) {
 	c.JSON(http.StatusOK, newTarget)
 }
 
+// Put the target status
+func (t *TargetController) Put(c *gin.Context) {
+	id := c.Param("id")
+	forceStatusUpdate := c.Query("forceStatusUpdate") == "true"
+	var targetObj types.Target
+	er := c.ShouldBind(&targetObj)
+	switch {
+	case er != nil:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": er.Error(),
+		})
+		return
+	case targetObj.Status < 0 || targetObj.Status > 100:
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid status.",
+		})
+		return
+	case !IsValidID(id):
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid target ID.",
+		})
+		return
+	}
+	t.db.Init()
+	defer t.db.Free()
+	target, err := t.db.GetTargetByID(id, false)
+	switch {
+	case err != nil:
+		log.Println("ERROR: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal error. Try again.",
+		})
+		return
+	case target == nil:
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Target not found.",
+		})
+		return
+	}
+	newTarget, err := t.db.UpdateTarget(target, &targetObj, forceStatusUpdate)
+	if err != nil {
+		log.Println("ERROR: ", err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal error. Try again.",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, newTarget)
+}
+
 func (t *TargetController) parentMissing(childID string) (*types.Target, *ErrorWithCode) {
 	parentID := types.GetTargetParentByID(childID)
 	if parentID == "" {

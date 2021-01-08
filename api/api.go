@@ -39,6 +39,7 @@ func (api *API) Serve() *gin.Engine {
 	r.GET("/targets", targets.GetAll)
 	r.PATCH("/targets/:id", targets.Patch)
 	r.POST("/targets", targets.Post)
+	r.PUT("/targets/:id", targets.Put)
 
 	return r
 }

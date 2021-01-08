@@ -13,6 +13,7 @@ import (
 	"github.com/kuritsu/spyglass/api/types"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestTargetGet(t *testing.T) {
@@ -334,12 +335,111 @@ func TestTargetPatchUpdateError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
+func TestTargetPutUpdateError(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetTargetByIDResult: &types.Target{
+			ID:                "parentTarget.target1",
+			Status:            0,
+			StatusDescription: "Not done",
+		},
+	}
+	target := types.Target{
+		ID:          "target",
+		Description: "my target",
+	}
+	dbMock.On("UpdateTarget", mock.Anything, mock.Anything, false).Return(nil, errors.New("Error updating target"))
+	r := Create(&dbMock, logrus.New()).Serve()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/targets/target", &target, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Contains(t, string(jsonBytes), "Internal error")
+}
+
+func TestTargetPutRequestError(t *testing.T) {
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
+	w, _ := testutil.MakeRequest(http.MethodPut, "/targets/1", "", r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestTargetPutStatusError(t *testing.T) {
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
+	target := types.Target{
+		ID:          "target",
+		Description: "my target",
+		Status:      300,
+	}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/targets/1", &target, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid status")
+}
+
+func TestTargetPutIdError(t *testing.T) {
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
+	target := types.Target{
+		ID:          "target",
+		Description: "my target",
+	}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/targets/target,1", &target, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid target ID")
+}
+
+func TestTargetPutGetTargetIDError(t *testing.T) {
+	r := Create(&testutil.StorageMock{
+		GetTargetByIDError: errors.New("Connection error"),
+	}, logrus.New()).Serve()
+	target := types.Target{
+		ID:          "target",
+		Description: "my target",
+	}
+	w, _ := testutil.MakeRequest(http.MethodPut, "/targets/target", &target, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestTargetPutGetTargetIDNotFound(t *testing.T) {
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
+	target := types.Target{
+		ID:          "target",
+		Description: "my target",
+	}
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/targets/target", &target, r)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Contains(t, string(jsonBytes), "Target not found")
+}
+
+func TestTargetPutSuccessful(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetTargetByIDResult: &types.Target{
+			ID:                "parentTarget.target1",
+			Status:            0,
+			StatusDescription: "Not done",
+		},
+	}
+	target := types.Target{
+		ID:          "target",
+		Description: "my target",
+		Permissions: types.Permissions{
+			CreatedAt: time.Now(),
+		},
+	}
+	dbMock.On("UpdateTarget", mock.Anything, mock.Anything, false).Return(&target, nil)
+	r := Create(&dbMock, logrus.New()).Serve()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/targets/target", &target, r)
+
+	assertValidTargetCreated(t, w, jsonBytes)
+}
+
 func assertValidTargetCreated(t *testing.T, w *httptest.ResponseRecorder, jsonBytes []byte) {
 	var newTarget types.Target
 	merr := json.Unmarshal(jsonBytes, &newTarget)
 
 	assert.Equal(t, nil, merr)
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Contains(t, []int{http.StatusCreated, http.StatusOK}, w.Code)
 	assert.NotEqual(t, time.Time{}, newTarget.CreatedAt)
 }
 

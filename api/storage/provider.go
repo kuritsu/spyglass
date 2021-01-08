@@ -14,4 +14,5 @@ type Provider interface {
 	InsertMonitor(*types.Monitor) (*types.Monitor, error)
 	InsertTarget(*types.Target) (*types.Target, error)
 	UpdateTargetStatus(*types.Target, *types.TargetPatch) (*types.Target, error)
+	UpdateTarget(*types.Target, *types.Target, bool) (*types.Target, error)
 }

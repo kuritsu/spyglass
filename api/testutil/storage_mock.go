@@ -69,3 +69,14 @@ func (m *StorageMock) UpdateTargetStatus(target *types.Target, targetPatch *type
 	}
 	return target, m.UpdateTargetStatusError
 }
+
+// UpdateTarget with also a status update force flag.
+func (m *StorageMock) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
+	forceStatusUpdate bool) (*types.Target, error) {
+	args := m.Called(oldTarget, newTarget, forceStatusUpdate)
+	res := args.Get(0)
+	if res == nil {
+		return nil, args.Error(1)
+	}
+	return res.(*types.Target), nil
+}
