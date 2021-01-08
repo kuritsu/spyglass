@@ -1,6 +1,6 @@
 # This is a comment
 
-monitor "mymonitors.mymonitor-2" {
+monitor "monitors.mymonitor2" {
   type = "docker"
   schedule = "* * * * *"
   definition {
@@ -15,7 +15,7 @@ monitor "mymonitors.mymonitor-2" {
   readers = ["ex"]
 }
 
-target "mytarget" {
+target "target" {
   description = "this is my target"
 	url = "https://mytarget.url"
 	view {
@@ -25,7 +25,7 @@ target "mytarget" {
 	status_description = "Progress of task"
 	critical = true
 	monitor {
-    monitor_id = "mymonitors.mymonitor-2"
+    monitor_id = "monitors.mymonitor2"
   }
 	writers = ["user@email.com"]
 }

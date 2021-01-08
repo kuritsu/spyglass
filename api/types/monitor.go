@@ -14,7 +14,7 @@ type DockerDefinition struct {
 
 // K8SDefinition is a Kubernetes task definition
 type K8SDefinition struct {
-	Pod *DockerDefinition `bson:",omitempty" hcl:"pod,block"`
+	Pod *DockerDefinition `json:"pod,omitempty" bson:",omitempty" hcl:"pod,block"`
 }
 
 // AWSServerlessDefinition is an AWS Lambda Serverless definition
@@ -31,8 +31,8 @@ type AzureServerlessDefinition struct {
 
 // ServerlessDefinition is a Serverless definition
 type ServerlessDefinition struct {
-	AWS   *AWSServerlessDefinition   `bson:",omitempty" hcl:"aws,block"`
-	Azure *AzureServerlessDefinition `bson:",omitempty" hcl:"azure,block"`
+	AWS   *AWSServerlessDefinition   `json:"aws,omitempty" bson:",omitempty" hcl:"aws,block"`
+	Azure *AzureServerlessDefinition `json:"azure,omitempty" bson:",omitempty" hcl:"azure,block"`
 }
 
 // ShellDefinition is a Shell command definition
@@ -43,11 +43,11 @@ type ShellDefinition struct {
 
 // MonitorDefinition is a definition of a monitor
 type MonitorDefinition struct {
-	Docker     *DockerDefinition     `bson:",omitempty" hcl:"docker,block"`
-	K8S        *K8SDefinition        `bson:",omitempty" hcl:"k8s,block"`
-	Serverless *ServerlessDefinition `bson:",omitempty" hcl:"serverless,block"`
-	Shell      *ShellDefinition      `bson:",omitempty" hcl:"shell,block"`
-	Target     *TargetDefinition     `bson:",omitempty" hcl:"target,block"`
+	Docker     *DockerDefinition     `json:"docker,omitempty" bson:",omitempty" hcl:"docker,block"`
+	K8S        *K8SDefinition        `json:"k8s,omitempty" bson:",omitempty" hcl:"k8s,block"`
+	Serverless *ServerlessDefinition `json:"serverless,omitempty" bson:",omitempty" hcl:"serverless,block"`
+	Shell      *ShellDefinition      `json:"shell,omitempty" bson:",omitempty" hcl:"shell,block"`
+	Target     *TargetDefinition     `json:"target,omitempty" bson:",omitempty" hcl:"target,block"`
 }
 
 // Monitor is a monitor definition for a target

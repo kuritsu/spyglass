@@ -10,6 +10,9 @@ type CallerMock struct {
 	mock.Mock
 }
 
+// Init -ialize mock.
+func (c *CallerMock) Init(url string) {}
+
 // InsertOrUpdateMonitor operation.
 func (c *CallerMock) InsertOrUpdateMonitor(monitor *types.Monitor) error {
 	args := c.Called(monitor)

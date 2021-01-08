@@ -19,3 +19,7 @@ GET http://localhost:8010/monitors/mymonitors.mymonitor-2
 
 ### Get some monitors
 GET http://localhost:8010/monitors?pageSize=2&pageIndex=0&contains=-2
+
+
+### Get monitor from sgc/e2e
+GET http://localhost:8010/monitors/monitors.mymonitor2

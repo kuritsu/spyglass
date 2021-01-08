@@ -27,6 +27,7 @@ func processArgs(cliObj *commands.CommandLineContext, logObj *logr.Logger) {
 		logObj.Fatal(err)
 		os.Exit(1)
 	}
+	cliObj.Caller.Init(options.APIAddress)
 
 	logObj.Println("Setting log level to", options.LogLevel)
 	logObj.SetLevel(options.LogLevelInt)

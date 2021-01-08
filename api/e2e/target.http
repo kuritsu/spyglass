@@ -91,3 +91,6 @@ Content-Type: application/json
 {
   "status": 100
 }
+
+### Get the target from sgc/e2e
+GET http://localhost:8010/targets/target

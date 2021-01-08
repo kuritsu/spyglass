@@ -105,11 +105,11 @@ func (o *ApplyOptions) applyConfigs() runner.Runner {
 	}
 	if err := o.applyAllMonitors(o.c.Caller, allMonitors); err != nil {
 		o.c.Log.Debug("Error applying monitors config.")
-		return &runner.ExitError{}
+		return &runner.ExitError{Error: err}
 	}
 	if err := o.applyAllTargets(o.c.Caller, types.TargetList(allTargets)); err != nil {
 		o.c.Log.Debug("Error applying targets config.")
-		return &runner.ExitError{}
+		return &runner.ExitError{Error: err}
 	}
 	return nil
 }
