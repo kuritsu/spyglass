@@ -29,8 +29,8 @@ func (api *API) Serve() *gin.Engine {
 	r := gin.Default()
 	monitors := MonitorController{}
 	targets := TargetController{}
-	monitors.Init(api.db)
-	targets.Init(api.db)
+	monitors.Init(api.db, api.log)
+	targets.Init(api.db, api.log)
 
 	r.GET("/monitors/:id", monitors.Get)
 	r.GET("/monitors", monitors.GetAll)

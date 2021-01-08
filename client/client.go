@@ -40,7 +40,8 @@ func (c *APIClient) InsertOrUpdateMonitor(monitor *types.Monitor) error {
 		response, err = c.client.Post(fmt.Sprintf("%s/monitors", c.url), "application/json", reader)
 	case http.StatusOK:
 		c.log.Debug("Putting monitor ", monitor.ID)
-		request, err = http.NewRequest("PUT", fmt.Sprintf("%s/monitors/%s", c.url, monitor.ID), reader)
+		request, _ = http.NewRequest("PUT", fmt.Sprintf("%s/monitors/%s", c.url, monitor.ID), reader)
+		request.Header["Content-Type"] = []string{"application/json"}
 		response, err = c.client.Do(request)
 	}
 	if err != nil {

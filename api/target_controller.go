@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	logr "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kuritsu/spyglass/api/storage"
@@ -15,12 +15,14 @@ import (
 
 // TargetController actions
 type TargetController struct {
-	db storage.Provider
+	db  storage.Provider
+	log *logr.Logger
 }
 
 // Init -ialize the controller
-func (t *TargetController) Init(db storage.Provider) {
+func (t *TargetController) Init(db storage.Provider, log *logr.Logger) {
 	t.db = db
+	t.log = log
 }
 
 // Get a target by its ID
@@ -31,7 +33,7 @@ func (t *TargetController) Get(c *gin.Context) {
 	target, err := t.db.GetTargetByID(id, true)
 	switch {
 	case err != nil:
-		log.Println("ERROR: ", err.Error())
+		t.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal error. Try again.",
 		})
@@ -74,7 +76,7 @@ func (t *TargetController) GetAll(c *gin.Context) {
 	}
 	targets, err := t.db.GetAllTargets(pageSize, pageIndex, contains)
 	if err != nil {
-		log.Println(err.Error())
+		t.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Invalid operation. Try again.",
 		})
@@ -115,7 +117,7 @@ func (t *TargetController) Post(c *gin.Context) {
 	}
 	_, err := t.db.InsertTarget(&target)
 	if err != nil {
-		log.Println(err.Error())
+		t.log.Error(err)
 		if strings.Contains(err.Error(), "duplicate") ||
 			strings.Contains(err.Error(), "Duplicate") {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -158,7 +160,7 @@ func (t *TargetController) Patch(c *gin.Context) {
 	target, err := t.db.GetTargetByID(id, false)
 	switch {
 	case err != nil:
-		log.Println("ERROR: ", err.Error())
+		t.log.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal error. Try again.",
 		})
@@ -171,7 +173,7 @@ func (t *TargetController) Patch(c *gin.Context) {
 	}
 	newTarget, err := t.db.UpdateTargetStatus(target, &targetPatch)
 	if err != nil {
-		log.Println("ERROR: ", err.Error())
+		t.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal error. Try again.",
 		})
@@ -208,7 +210,7 @@ func (t *TargetController) Put(c *gin.Context) {
 	target, err := t.db.GetTargetByID(id, false)
 	switch {
 	case err != nil:
-		log.Println("ERROR: ", err.Error())
+		t.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal error. Try again.",
 		})
@@ -221,7 +223,7 @@ func (t *TargetController) Put(c *gin.Context) {
 	}
 	newTarget, err := t.db.UpdateTarget(target, &targetObj, forceStatusUpdate)
 	if err != nil {
-		log.Println("ERROR: ", err.Error())
+		t.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal error. Try again.",
 		})
@@ -238,12 +240,12 @@ func (t *TargetController) parentMissing(childID string) (*types.Target, *ErrorW
 
 	parent, err := t.db.GetTargetByID(parentID, false)
 	if err != nil {
-		log.Println(err.Error())
+		t.log.Error(err)
 		return nil, &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}
 	}
 	if parent == nil {
 		msg := fmt.Sprintf("Target parent does not exist. (%s)", parentID)
-		log.Println(msg)
+		t.log.Println(msg)
 		return nil, &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
 	}
 	return parent, nil
@@ -255,12 +257,12 @@ func (t *TargetController) monitorMissing(monitorRef *types.MonitorRef) *ErrorWi
 	}
 	monitor, err := t.db.GetMonitorByID(monitorRef.MonitorID)
 	if err != nil {
-		log.Println(err.Error())
+		t.log.Error(err)
 		return &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}
 	}
 	if monitor == nil {
 		msg := fmt.Sprintf("Monitor does not exist. (%s)", monitorRef.MonitorID)
-		log.Println(msg)
+		t.log.Println(msg)
 		return &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
 	}
 	return nil

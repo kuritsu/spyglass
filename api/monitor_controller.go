@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	logr "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kuritsu/spyglass/api/storage"
@@ -14,12 +14,14 @@ import (
 
 // MonitorController actions
 type MonitorController struct {
-	db storage.Provider
+	db  storage.Provider
+	log *logr.Logger
 }
 
 // Init -ialize the controller
-func (m *MonitorController) Init(db storage.Provider) {
+func (m *MonitorController) Init(db storage.Provider, log *logr.Logger) {
 	m.db = db
+	m.log = log
 }
 
 // Get a monitor by its Id
@@ -30,7 +32,7 @@ func (m *MonitorController) Get(c *gin.Context) {
 	monitor, err := m.db.GetMonitorByID(id)
 	switch {
 	case err != nil:
-		log.Println("ERROR: ", err.Error())
+		m.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal error. Try again.",
 		})
@@ -73,7 +75,7 @@ func (m *MonitorController) GetAll(c *gin.Context) {
 	}
 	monitor, err := m.db.GetAllMonitors(pageSize, pageIndex, contains)
 	if err != nil {
-		log.Println(err.Error())
+		m.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Invalid operation. Try again.",
 		})
@@ -101,7 +103,7 @@ func (m *MonitorController) Post(c *gin.Context) {
 	defer m.db.Free()
 	_, err := m.db.InsertMonitor(&monitor)
 	if err != nil {
-		log.Println(err.Error())
+		m.log.Error(err)
 		if strings.Contains(err.Error(), "duplicate") ||
 			strings.Contains(err.Error(), "Duplicate") {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -132,8 +134,11 @@ func (m *MonitorController) Put(c *gin.Context) {
 		})
 		return
 	}
+	m.db.Init()
+	defer m.db.Free()
 	oldMonitor, err := m.db.GetMonitorByID(newMonitor.ID)
 	if err != nil {
+		m.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Invalid operation. Try again.",
 		})
@@ -149,6 +154,7 @@ func (m *MonitorController) Put(c *gin.Context) {
 	defer m.db.Free()
 	updatedMonitor, err := m.db.UpdateMonitor(oldMonitor, &newMonitor)
 	if err != nil {
+		m.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Invalid operation. Try again.",
 		})

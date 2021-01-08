@@ -15,6 +15,23 @@ monitor "monitors.mymonitor2" {
   readers = ["ex"]
 }
 
+# monitor "monitors.mymonitor2" {
+#   type = "k8s"
+#   schedule = "* 2 * * *"
+#   definition {
+#     k8s {
+#       pod {
+#         image = "nginx:latest"
+#         docker_env = {
+#           var1 = "var1"
+#         }
+#       }
+#     }
+#   }
+#   readers = ["ex1"]
+#   writers = ["ex2"]
+# }
+
 target "target" {
   description = "this is my real target"
 	url = "https://mytarget.url"
