@@ -97,20 +97,6 @@ func (p *MongoDB) Free() {
 	p.client.Disconnect(p.context)
 }
 
-// GetMonitorByID returns a monitor by its ID.
-func (p *MongoDB) GetMonitorByID(id string) (*types.Monitor, error) {
-	col := p.client.Database("spyglass").Collection("Monitors")
-	res := col.FindOne(p.context, bson.M{"id": id})
-	var monitor types.Monitor
-	err := res.Err()
-	if err == nil {
-		res.Decode(&monitor)
-	} else if err == mongo.ErrNoDocuments {
-		return nil, nil
-	}
-	return &monitor, err
-}
-
 // GetAllMonitors returns all monitors which contains a string, paginated.
 func (p *MongoDB) GetAllMonitors(pageSize int64, pageIndex int64, contains string) ([]types.Monitor, error) {
 	col := p.client.Database("spyglass").Collection("Monitors")
@@ -163,17 +149,18 @@ func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string
 	return targets, nil
 }
 
-// InsertMonitor into the db
-func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) {
-	monitor.CreatedAt = time.Now()
-	monitor.UpdatedAt = time.Now()
-	_, err := p.client.Database("spyglass").Collection("Monitors").InsertOne(
-		p.context, monitor)
-	if err != nil {
-		p.Log.Errorf("Could not create Monitor: %v", err)
-		return nil, err
+// GetMonitorByID returns a monitor by its ID.
+func (p *MongoDB) GetMonitorByID(id string) (*types.Monitor, error) {
+	col := p.client.Database("spyglass").Collection("Monitors")
+	res := col.FindOne(p.context, bson.M{"id": id})
+	var monitor types.Monitor
+	err := res.Err()
+	if err == nil {
+		res.Decode(&monitor)
+	} else if err == mongo.ErrNoDocuments {
+		return nil, nil
 	}
-	return monitor, nil
+	return &monitor, err
 }
 
 // GetTargetByID returns a target by its ID.
@@ -212,6 +199,19 @@ func (p *MongoDB) GetTargetByID(id string, includeChildren bool) (*types.Target,
 	return parent, err
 }
 
+// InsertMonitor into the db
+func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) {
+	monitor.CreatedAt = time.Now()
+	monitor.UpdatedAt = time.Now()
+	_, err := p.client.Database("spyglass").Collection("Monitors").InsertOne(
+		p.context, monitor)
+	if err != nil {
+		p.Log.Errorf("Could not create Monitor: %v", err)
+		return nil, err
+	}
+	return monitor, nil
+}
+
 // InsertTarget into the db.
 func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 	target.ID = strings.ToLower(target.ID)
@@ -228,6 +228,21 @@ func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 		return nil, err
 	}
 	return target, nil
+}
+
+// UpdateMonitor with the modifyable fields.
+func (p *MongoDB) UpdateMonitor(oldMonitor *types.Monitor, newMonitor *types.Monitor) (*types.Monitor, error) {
+	newMonitor.CreatedAt = oldMonitor.CreatedAt
+	newMonitor.Owner = oldMonitor.Owner
+	newMonitor.UpdatedAt = time.Now()
+	_, err := p.client.Database("spyglass").Collection("Monitors").UpdateOne(
+		p.context, bson.M{"id": oldMonitor.ID},
+		bson.M{"$set": newMonitor})
+	if err != nil {
+		p.Log.Errorf("Could not create Monitor: %v", err)
+		return nil, err
+	}
+	return newMonitor, nil
 }
 
 // UpdateTargetStatus with all modified fields

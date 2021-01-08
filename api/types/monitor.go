@@ -55,6 +55,7 @@ type Monitor struct {
 	ID          string `json:"id" binding:"required" hcl:"id,label"`
 	Type        string `json:"type" binding:"required" hcl:"type"`
 	Schedule    string `json:"schedule" binding:"required" hcl:"schedule"`
+	Description string `json:"description,omitempty" bson:",omitempty" hcl:"description,optional"`
 	Permissions `hcl:",remain"`
 	Definition  *MonitorDefinition `json:"definition" binding:"required" hcl:"definition,block"`
 }

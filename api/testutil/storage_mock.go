@@ -30,11 +30,6 @@ func (m *StorageMock) Init() {}
 // Free resources
 func (m *StorageMock) Free() {}
 
-// GetMonitorByID returns mocked stuff
-func (m *StorageMock) GetMonitorByID(id string) (*types.Monitor, error) {
-	return m.GetMonitorByIDResult, m.GetMonitorByIDError
-}
-
 // GetAllMonitors returns mocked stuff
 func (m *StorageMock) GetAllMonitors(pageSize int64, pageIndex int64, contains string) ([]types.Monitor, error) {
 	return m.GetAllMonitorsResult, m.GetAllMonitorsError
@@ -45,10 +40,9 @@ func (m *StorageMock) GetAllTargets(pageSize int64, pageIndex int64, contains st
 	return m.GetAllTargetsResult, m.GetAllTargetsError
 }
 
-// InsertMonitor in the db
-func (m *StorageMock) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) {
-	monitor.CreatedAt = time.Now()
-	return monitor, m.InsertMonitorError
+// GetMonitorByID returns mocked stuff
+func (m *StorageMock) GetMonitorByID(id string) (*types.Monitor, error) {
+	return m.GetMonitorByIDResult, m.GetMonitorByIDError
 }
 
 // GetTargetByID returns nothing
@@ -56,10 +50,25 @@ func (m *StorageMock) GetTargetByID(id string, includeChildren bool) (*types.Tar
 	return m.GetTargetByIDResult, m.GetTargetByIDError
 }
 
+// InsertMonitor in the db
+func (m *StorageMock) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) {
+	monitor.CreatedAt = time.Now()
+	return monitor, m.InsertMonitorError
+}
+
 // InsertTarget into the db.
 func (m *StorageMock) InsertTarget(target *types.Target) (*types.Target, error) {
 	target.CreatedAt = time.Now()
 	return target, m.InsertTargetError
+}
+
+// UpdateMonitor with the modifyable fields.
+func (m *StorageMock) UpdateMonitor(oldMonitor *types.Monitor, newMonitor *types.Monitor) (*types.Monitor, error) {
+	args := m.Called(oldMonitor, newMonitor)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*types.Monitor), nil
 }
 
 // UpdateTargetStatus with all modified fields

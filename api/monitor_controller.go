@@ -116,3 +116,43 @@ func (m *MonitorController) Post(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, monitor)
 }
+
+// Put an existing monitor.
+func (m *MonitorController) Put(c *gin.Context) {
+	var newMonitor types.Monitor
+	if er := c.ShouldBind(&newMonitor); er != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": er.Error(),
+		})
+		return
+	}
+	if !IsValidID(newMonitor.ID) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid monitor ID.",
+		})
+		return
+	}
+	oldMonitor, err := m.db.GetMonitorByID(newMonitor.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid operation. Try again.",
+		})
+		return
+	}
+	if oldMonitor == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Monitor not found.",
+		})
+		return
+	}
+	m.db.Init()
+	defer m.db.Free()
+	updatedMonitor, err := m.db.UpdateMonitor(oldMonitor, &newMonitor)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid operation. Try again.",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, updatedMonitor)
+}

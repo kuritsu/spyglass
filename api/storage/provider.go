@@ -13,6 +13,7 @@ type Provider interface {
 	GetTargetByID(string, bool) (*types.Target, error)
 	InsertMonitor(*types.Monitor) (*types.Monitor, error)
 	InsertTarget(*types.Target) (*types.Target, error)
+	UpdateMonitor(*types.Monitor, *types.Monitor) (*types.Monitor, error)
 	UpdateTargetStatus(*types.Target, *types.TargetPatch) (*types.Target, error)
 	UpdateTarget(*types.Target, *types.Target, bool) (*types.Target, error)
 }

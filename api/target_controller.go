@@ -180,7 +180,7 @@ func (t *TargetController) Patch(c *gin.Context) {
 	c.JSON(http.StatusOK, newTarget)
 }
 
-// Put the target status
+// Put an existing target.
 func (t *TargetController) Put(c *gin.Context) {
 	id := c.Param("id")
 	forceStatusUpdate := c.Query("forceStatusUpdate") == "true"

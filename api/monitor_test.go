@@ -12,6 +12,7 @@ import (
 	"github.com/kuritsu/spyglass/api/types"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestMonitorGet(t *testing.T) {
@@ -182,13 +183,79 @@ func TestMonitorPostErrorInvalidID(t *testing.T) {
 	assert.Contains(t, string(jsonBytes), "Invalid monitor ID")
 }
 
+func TestMonitorPutErrorInvalidID(t *testing.T) {
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
+	monitor := getValidMonitor()
+	monitor.ID = "/monitor"
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/monitors/monitor,1", monitor, r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid monitor ID")
+}
+
+func TestMonitorPutInvalidMonitor(t *testing.T) {
+	r := Create(&testutil.StorageMock{}, logrus.New()).Serve()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/monitors/monitor1", "{}", r)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, string(jsonBytes), "Go value of type types.Monitor")
+}
+
+func TestMonitorPutGetMonitorDbError(t *testing.T) {
+	dbMock := testutil.StorageMock{
+		GetMonitorByIDError: errors.New("Connection error"),
+	}
+	r := Create(&dbMock, logrus.New()).Serve()
+	monitor := getValidMonitor()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/monitors/mymonitor", &monitor, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid operation")
+}
+
+func TestMonitorPutMonitorNotFound(t *testing.T) {
+	dbMock := testutil.StorageMock{}
+	r := Create(&dbMock, logrus.New()).Serve()
+	monitor := getValidMonitor()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/monitors/mymonitor", &monitor, r)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Contains(t, string(jsonBytes), "Monitor not found")
+}
+
+func TestMonitorPutUpdateError(t *testing.T) {
+	monitor := getValidMonitor()
+	dbMock := testutil.StorageMock{
+		GetMonitorByIDResult: monitor,
+	}
+	dbMock.On("UpdateMonitor", mock.Anything, mock.Anything).Return(nil, errors.New("Connection error"))
+	r := Create(&dbMock, logrus.New()).Serve()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/monitors/mymonitor", &monitor, r)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Contains(t, string(jsonBytes), "Invalid operation")
+}
+
+func TestMonitorPutSuccess(t *testing.T) {
+	monitor := getValidMonitor()
+	monitor.CreatedAt = time.Now()
+	dbMock := testutil.StorageMock{
+		GetMonitorByIDResult: monitor,
+	}
+	dbMock.On("UpdateMonitor", mock.Anything, mock.Anything).Return(monitor, nil)
+	r := Create(&dbMock, logrus.New()).Serve()
+	w, jsonBytes := testutil.MakeRequest(http.MethodPut, "/monitors/mymonitor", &monitor, r)
+
+	assertValidMonitorCreated(t, w, jsonBytes)
+}
+
 func assertValidMonitorCreated(t *testing.T, w *httptest.ResponseRecorder, jsonBytes []byte) {
 	var newMonitor types.Monitor
 	merr := json.Unmarshal(jsonBytes, &newMonitor)
 
 	assert.Equal(t, nil, merr)
-	assert.Equal(t, w.Code, http.StatusCreated)
-	assert.NotEqual(t, newMonitor.Permissions.CreatedAt, time.Time{})
+	assert.Contains(t, []int{http.StatusCreated, http.StatusOK}, w.Code)
+	assert.NotEqual(t, newMonitor.CreatedAt, time.Time{})
 }
 
 func getValidMonitor() *types.Monitor {
