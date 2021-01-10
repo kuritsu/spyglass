@@ -63,24 +63,8 @@ func (o *TargetOptions) Apply(c *CommandLineContext) runner.Runner {
 			Logger: c.Log,
 		}
 	}
-	switch nonFlag[0] {
-	case "list":
-		return o.ListTargets()
-	case "update-status":
-		return o.UpdateStatus()
-	}
 	return &runner.ExitError{FlagSet: o.flagSet,
 		Error:  errors.New("Action not supported"),
 		Logger: c.Log,
 	}
-}
-
-// ListTargets shows a list either formatted or using JSON.
-func (o *TargetOptions) ListTargets() runner.Runner {
-	return nil
-}
-
-// UpdateStatus ensures that the status of the specified target is updated.
-func (o *TargetOptions) UpdateStatus() runner.Runner {
-	return nil
 }
