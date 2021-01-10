@@ -32,6 +32,7 @@ var logLevelNames = map[string]logr.Level{
 var CommandList = map[string]commands.Command{
 	"apply":  commands.ApplyFlags(),
 	"server": commands.ServerFlags(),
+	"target": commands.TargetFlags(),
 }
 
 func defineGlobalFlags(fs *flag.FlagSet, opts *Options) {
@@ -46,7 +47,7 @@ func defineGlobalFlags(fs *flag.FlagSet, opts *Options) {
 
 func printGlobalHelp(fs *flag.FlagSet) {
 	fmt.Println("Usage:")
-	fmt.Println("  spyglass <command> [flags]")
+	fmt.Println("  spyglass <command> [global-flags]")
 	fmt.Println("\nCommands:")
 	for k, v := range CommandList {
 		fmt.Println("  ", k)
@@ -92,9 +93,4 @@ func GetOptions(args []string) (*Options, error) {
 	result.LogLevelInt = level
 
 	return &result, nil
-}
-
-// Process the command line.
-func (o *Options) Process(c *commands.CommandLineContext) {
-	o.Action.Apply(c)
 }

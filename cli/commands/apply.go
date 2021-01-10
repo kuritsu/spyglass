@@ -28,7 +28,7 @@ func (o *ApplyOptions) GetFlags() *flag.FlagSet {
 
 // Description for the current command.
 func (o *ApplyOptions) Description() string {
-	return "Apply the configuration contained in *.sgc files in the specified directory."
+	return "Apply the configuration contained in *.hcl files in the specified directory."
 }
 
 // ApplyFlags obtains flags for apply action

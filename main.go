@@ -17,26 +17,26 @@ import (
 	"go.uber.org/fx"
 )
 
-func processArgs(cliObj *commands.CommandLineContext, logObj *logr.Logger) {
+func processArgs(cliObj *commands.CommandLineContext) {
 	options, err := cli.GetOptions(os.Args[1:])
-	logObj.SetLevel(logr.InfoLevel)
-	logObj.SetFormatter(&LogFormatter{
+	cliObj.Log.SetLevel(logr.InfoLevel)
+	cliObj.Log.SetFormatter(&LogFormatter{
 		ShowDate: err == nil && options.OutputIncludeTimestamps || false,
 	})
 	if err != nil {
-		logObj.Fatal(err)
+		cliObj.Log.Fatal(err)
 		os.Exit(1)
 	}
 	cliObj.Caller.Init(options.APIAddress)
 
-	logObj.Println("Setting log level to", options.LogLevel)
-	logObj.SetLevel(options.LogLevelInt)
+	cliObj.Log.Println("Setting log level to", options.LogLevel)
+	cliObj.Log.SetLevel(options.LogLevelInt)
 
 	runner := options.Action.Apply(cliObj)
 	if runner != nil {
 		err = runner.Run()
 		if err != nil {
-			logObj.Error(err)
+			cliObj.Log.Error(err)
 			os.Exit(1)
 		}
 	}
@@ -52,11 +52,6 @@ func StringListContains(a []string, x string) bool {
 	return false
 }
 
-func createLog() *logr.Logger {
-	result := logr.New()
-	return result
-}
-
 /*
 	All go programs start running from a function called main.
 */
@@ -70,7 +65,9 @@ func main() {
 		fx.Logger(fxlog),
 		fx.Provide(
 			storage.CreateProviderFromConf,
-			createLog,
+			func() *logr.Logger {
+				return logr.New()
+			},
 			commands.CreateContext,
 			func() sgc.Manager {
 				return &sgc.FileManager{}
