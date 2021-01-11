@@ -63,8 +63,13 @@ func (o *TargetOptions) Apply(c *CommandLineContext) runner.Runner {
 			Logger: c.Log,
 		}
 	}
-	return &runner.ExitError{FlagSet: o.flagSet,
-		Error:  errors.New("Action not supported"),
-		Logger: c.Log,
+	subcommand, ok := o.actions[nonFlag[0]]
+	if !ok {
+		return &runner.ExitError{FlagSet: o.flagSet,
+			Error:  errors.New("Action not supported"),
+			Logger: c.Log,
+		}
 	}
+	o.actions[nonFlag[0]].GetFlags().Parse(nonFlag[1:])
+	return subcommand.Apply(c)
 }

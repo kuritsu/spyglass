@@ -35,7 +35,7 @@ func (c *APIClient) Init(url string) {
 func (c *APIClient) ListTargets(filter string, pageIndex int, pageSize int) ([]*types.Target, error) {
 	c.log.Debugf("Getting targets %v, pageIndex %v, pageSize %v", filter, pageIndex, pageSize)
 	response, err := c.client.Get(
-		fmt.Sprintf("%s/targets?filter=%s&pageIndex=%v&pageSize=%v",
+		fmt.Sprintf("%s/targets?contains=%s&pageIndex=%v&pageSize=%v",
 			c.url, filter, pageIndex, pageSize))
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (c *APIClient) ListTargets(filter string, pageIndex int, pageSize int) ([]*
 	if rerr != nil {
 		return nil, rerr
 	}
-	if err = json.Unmarshal(bodyBytes, result); err != nil {
+	if err = json.Unmarshal(bodyBytes, &result); err != nil {
 		return nil, err
 	}
 	return result, nil
