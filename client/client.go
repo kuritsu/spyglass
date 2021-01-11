@@ -19,9 +19,36 @@ type APIClient struct {
 	url    string
 }
 
+// Create API client.
+func Create(log *logr.Logger) APICaller {
+	return &APIClient{
+		client: &http.Client{},
+		log:    log}
+}
+
 // Init -ialize the client with the url.
 func (c *APIClient) Init(url string) {
 	c.url = url
+}
+
+// ListTargets operation
+func (c *APIClient) ListTargets(filter string, pageIndex int, pageSize int) ([]*types.Target, error) {
+	c.log.Debugf("Getting targets %v, pageIndex %v, pageSize %v", filter, pageIndex, pageSize)
+	response, err := c.client.Get(
+		fmt.Sprintf("%s/targets?filter=%s&pageIndex=%v&pageSize=%v",
+			c.url, filter, pageIndex, pageSize))
+	if err != nil {
+		return nil, err
+	}
+	result := []*types.Target{}
+	bodyBytes, rerr := ioutil.ReadAll(response.Body)
+	if rerr != nil {
+		return nil, rerr
+	}
+	if err = json.Unmarshal(bodyBytes, result); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // InsertOrUpdateMonitor operation.
@@ -86,11 +113,29 @@ func (c *APIClient) InsertOrUpdateTarget(target *types.Target, forceStatusUpdate
 	return nil
 }
 
-// Create API client.
-func Create(log *logr.Logger) APICaller {
-	return &APIClient{
-		client: &http.Client{},
-		log:    log}
+// UpdateTargetStatus operation
+func (c *APIClient) UpdateTargetStatus(id string, status int, statusDescription string) error {
+	targetPatch := make(map[string]interface{})
+	targetPatch["status"] = status
+	if statusDescription != "" {
+		targetPatch["statusDescription"] = statusDescription
+	}
+	bodyBytes, _ := json.Marshal(targetPatch)
+	reader := strings.NewReader(string(bodyBytes))
+	c.log.Debug("Patching target ", id)
+	request, _ := http.NewRequest(http.MethodPatch,
+		fmt.Sprintf("%s/targets/%s", c.url, id), reader)
+	request.Header["Content-Type"] = []string{"application/json"}
+	response, err := c.client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return c.errorWithMessage(response)
+	}
+	c.log.Debug("Status patched successfully.")
+	return nil
 }
 
 func (c *APIClient) errorWithMessage(response *http.Response) error {
