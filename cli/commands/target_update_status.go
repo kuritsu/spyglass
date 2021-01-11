@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 
@@ -30,8 +31,8 @@ func (o *TargetUpdateStatusAction) Description() string {
 func TargetUpdateStatusActionFlags(parentFs *flag.FlagSet) *TargetUpdateStatusAction {
 	result := TargetUpdateStatusAction{}
 	result.flagSet = flag.NewFlagSet("list", flag.ContinueOnError)
-	result.flagSet.StringVar(&result.id, "id", "", "Target ID.")
-	result.flagSet.IntVar(&result.status, "s", 0, "Status (0 - 100). Mandatory.")
+	result.flagSet.StringVar(&result.id, "id", "", "[MANDATORY] Target ID.")
+	result.flagSet.IntVar(&result.status, "s", 0, "[MANDATORY] Status (0 - 100).")
 	result.flagSet.StringVar(&result.statusDescription, "d", "", "Status description.")
 	result.flagSet.Usage = func() {
 		fmt.Println("Usage:")
@@ -46,5 +47,29 @@ func TargetUpdateStatusActionFlags(parentFs *flag.FlagSet) *TargetUpdateStatusAc
 
 // Apply the current action.
 func (o *TargetUpdateStatusAction) Apply(c *CommandLineContext) runner.Runner {
+	c.Log.Debug("Apply target update-status...")
+	idFound := false
+	statusFound := false
+	o.flagSet.Visit(func(f *flag.Flag) {
+		if f.Name == "id" {
+			idFound = true
+		}
+		if f.Name == "s" {
+			statusFound = true
+		}
+	})
+	if !idFound {
+		return &runner.ExitError{Error: errors.New("id (target ID) flag is required"),
+			Logger: c.Log, FlagSet: o.flagSet}
+	}
+	if !statusFound {
+		return &runner.ExitError{Error: errors.New("s (status) flag is required"),
+			Logger: c.Log, FlagSet: o.flagSet}
+	}
+	err := c.Caller.UpdateTargetStatus(o.id, o.status, o.statusDescription)
+	if err != nil {
+		return &runner.ExitError{Error: err, Logger: c.Log}
+	}
+	c.Log.Debug("Status updated.")
 	return nil
 }
