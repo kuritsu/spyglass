@@ -35,10 +35,9 @@ func TestTargetUpdateStatusActionWithConnectionError(t *testing.T) {
 	caller.On("UpdateTargetStatus", mock.Anything, mock.Anything, mock.Anything).
 		Return(errors.New("Connection error"))
 	result := action.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     &caller,
-		SgcManager: nil,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: &caller,
 	})
 
 	assert.NotNil(t, result)
@@ -58,10 +57,9 @@ func TestTargetUpdateStatusActionSuccess(t *testing.T) {
 	caller := client.CallerMock{}
 	caller.On("UpdateTargetStatus", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 	result := action.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     &caller,
-		SgcManager: nil,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: &caller,
 	})
 
 	assert.Nil(t, result)
@@ -80,10 +78,9 @@ func TestTargetUpdateStatusActionNoIdError(t *testing.T) {
 	mockLog.SetLevel(logrus.DebugLevel)
 	caller := client.CallerMock{}
 	result := action.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     &caller,
-		SgcManager: nil,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: &caller,
 	})
 
 	assert.NotNil(t, result)
@@ -102,10 +99,9 @@ func TestTargetUpdateStatusActionNoStatusError(t *testing.T) {
 	mockLog.SetLevel(logrus.DebugLevel)
 	caller := client.CallerMock{}
 	result := action.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     &caller,
-		SgcManager: nil,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: &caller,
 	})
 
 	assert.NotNil(t, result)

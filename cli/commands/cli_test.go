@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/kuritsu/spyglass/api/testutil"
-	"github.com/kuritsu/spyglass/cli/commands/mocks"
 	"github.com/kuritsu/spyglass/client"
 	"github.com/sirupsen/logrus"
 	"github.com/sirupsen/logrus/hooks/test"
@@ -14,7 +13,7 @@ import (
 func TestCommandLine(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.DebugLevel)
-	c := CreateContext(&testutil.StorageMock{}, logger, &mocks.SgcManagerMock{}, &client.CallerMock{})
+	c := CreateContext(&testutil.StorageMock{}, logger, &client.CallerMock{})
 
 	assert.NotNil(t, c)
 	assert.NotNil(t, hook.AllEntries())

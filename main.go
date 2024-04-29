@@ -3,7 +3,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 
 	logr "github.com/sirupsen/logrus"
@@ -13,7 +13,6 @@ import (
 	"github.com/kuritsu/spyglass/cli"
 	"github.com/kuritsu/spyglass/cli/commands"
 	"github.com/kuritsu/spyglass/client"
-	"github.com/kuritsu/spyglass/sgc"
 	"go.uber.org/fx"
 )
 
@@ -53,12 +52,12 @@ func StringListContains(a []string, x string) bool {
 }
 
 /*
-	All go programs start running from a function called main.
+All go programs start running from a function called main.
 */
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 	fxlog := logr.New()
-	fxlog.SetOutput(ioutil.Discard)
+	fxlog.SetOutput(io.Discard)
 
 	fmt.Println("spyglass", VERSION)
 	app := fx.New(
@@ -69,9 +68,6 @@ func main() {
 				return logr.New()
 			},
 			commands.CreateContext,
-			func() sgc.Manager {
-				return &sgc.FileManager{}
-			},
 			client.Create,
 		),
 		fx.Invoke(processArgs),

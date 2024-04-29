@@ -29,14 +29,12 @@ func TestTargetFlagsWithNoAction(t *testing.T) {
 	got.flagSet.Parse([]string{})
 	mockLog, hook := test.NewNullLogger()
 	mockLog.SetLevel(logrus.DebugLevel)
-	sgcManager := getGoodSgcManager()
 	caller := &client.CallerMock{}
 
 	result := got.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     caller,
-		SgcManager: sgcManager,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: caller,
 	})
 
 	assert.NotNil(t, result)
@@ -55,10 +53,9 @@ func TestTargetFlagsWithUnsupportedAction(t *testing.T) {
 	mockLog, hook := test.NewNullLogger()
 	mockLog.SetLevel(logrus.DebugLevel)
 	result := got.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     &client.CallerMock{},
-		SgcManager: nil,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: &client.CallerMock{},
 	})
 
 	assert.NotNil(t, result)
@@ -81,10 +78,9 @@ func TestTargetFlagsWithListAction(t *testing.T) {
 		{ID: "target"},
 	}, nil)
 	result := got.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     &caller,
-		SgcManager: nil,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: &caller,
 	})
 
 	assert.Nil(t, result)

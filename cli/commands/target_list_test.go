@@ -33,10 +33,9 @@ func TestTargetListActionListTargetsError(t *testing.T) {
 	caller := client.CallerMock{}
 	caller.On("ListTargets", mock.Anything, mock.Anything, mock.Anything).Return(nil, errors.New("Connection error"))
 	result := action.Apply(&CommandLineContext{
-		Db:         &testutil.StorageMock{},
-		Log:        mockLog,
-		Caller:     &caller,
-		SgcManager: nil,
+		Db:     &testutil.StorageMock{},
+		Log:    mockLog,
+		Caller: &caller,
 	})
 
 	assert.NotNil(t, result)

@@ -10,7 +10,7 @@ type CallerMock struct {
 	mock.Mock
 }
 
-// Init -ialize mock.
+// Initialize mock.
 func (c *CallerMock) Init(url string) {
 	c.Called(url)
 }

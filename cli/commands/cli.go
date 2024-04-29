@@ -3,22 +3,20 @@ package commands
 import (
 	"github.com/kuritsu/spyglass/api/storage"
 	"github.com/kuritsu/spyglass/client"
-	"github.com/kuritsu/spyglass/sgc"
 	logr "github.com/sirupsen/logrus"
 )
 
 // CommandLineContext processing with API calls
 type CommandLineContext struct {
-	Db         storage.Provider
-	Log        *logr.Logger
-	SgcManager sgc.Manager
-	Caller     client.APICaller
+	Db     storage.Provider
+	Log    *logr.Logger
+	Caller client.APICaller
 }
 
 // CreateContext an instance of the CLI object
-func CreateContext(db storage.Provider, log *logr.Logger, fmgr sgc.Manager,
+func CreateContext(db storage.Provider, log *logr.Logger,
 	api client.APICaller) *CommandLineContext {
-	result := CommandLineContext{db, log, fmgr, api}
+	result := CommandLineContext{db, log, api}
 	result.Log.Debug("Created CommandLine instance.")
 	return &result
 }
