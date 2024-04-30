@@ -36,11 +36,11 @@ func (api *API) Serve() *gin.Engine {
 	r.GET("/monitors", monitors.GetAll)
 	r.POST("/monitors", monitors.Post)
 	r.PUT("/monitors/:id", monitors.Put)
-	r.GET("/targets/:id", targets.Get)
+	r.GET("/target", targets.Get)
 	r.GET("/targets", targets.GetAll)
-	r.PATCH("/targets/:id", targets.Patch)
+	r.PATCH("/target", targets.Patch)
 	r.POST("/targets", targets.Post)
-	r.PUT("/targets/:id", targets.Put)
+	r.PUT("/target", targets.Put)
 
 	return r
 }

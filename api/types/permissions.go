@@ -4,9 +4,9 @@ import "time"
 
 // Permissions for all objects
 type Permissions struct {
-	Owner     string    `json:"owner"`
-	Readers   []string  `json:"readers" hcl:"readers,optional"`
-	Writers   []string  `json:"writers" hcl:"writers,optional"`
+	Owners    []string  `json:"owners"`
+	Readers   []string  `json:"readers"`
+	Writers   []string  `json:"writers"`
 	CreatedAt time.Time `json:"createdAt" bson:"createdAt" time_format:"unix"`
 	UpdatedAt time.Time `json:"updatedAt" bson:"updatedAt" time_format:"unix"`
 }

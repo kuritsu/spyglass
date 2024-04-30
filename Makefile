@@ -15,6 +15,10 @@ test:
 db:
 	docker-compose up -d
 
+db-clean:
+	docker-compose down
+	rm -rf data
+
 .PHONY: api
 api: build
 	bash ./scripts/api.sh

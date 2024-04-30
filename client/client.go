@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/kuritsu/spyglass/api/types"
@@ -41,7 +42,7 @@ func (c *APIClient) ListTargets(filter string, pageIndex int, pageSize int) ([]*
 		return nil, err
 	}
 	result := []*types.Target{}
-	bodyBytes, rerr := ioutil.ReadAll(response.Body)
+	bodyBytes, rerr := io.ReadAll(response.Body)
 	if rerr != nil {
 		return nil, rerr
 	}
@@ -124,7 +125,7 @@ func (c *APIClient) UpdateTargetStatus(id string, status int, statusDescription 
 	reader := strings.NewReader(string(bodyBytes))
 	c.log.Debug("Patching target ", id)
 	request, _ := http.NewRequest(http.MethodPatch,
-		fmt.Sprintf("%s/targets/%s", c.url, id), reader)
+		fmt.Sprintf("%s/target?id=%s", c.url, id), reader)
 	request.Header["Content-Type"] = []string{"application/json"}
 	response, err := c.client.Do(request)
 	if err != nil {
@@ -138,8 +139,35 @@ func (c *APIClient) UpdateTargetStatus(id string, status int, statusDescription 
 	return nil
 }
 
+// UpdateTargetStatus operation
+func (c *APIClient) GetTargetByID(id string, includeChildren bool) (types.TargetRef, error) {
+	c.log.Debug("Getting target ", id)
+	request, _ := http.NewRequest(http.MethodGet,
+		fmt.Sprintf("%s/target?id=%s&includeChildren=%v", c.url, url.QueryEscape(id), includeChildren), http.NoBody)
+	request.Header["Content-Type"] = []string{"application/json"}
+	response, err := c.client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return nil, c.errorWithMessage(response)
+	}
+	result := &types.Target{}
+	bodyBytes, rerr := io.ReadAll(response.Body)
+	fmt.Printf("%v\n", string(bodyBytes))
+	if rerr != nil {
+		return nil, rerr
+	}
+	if err = json.Unmarshal(bodyBytes, &result); err != nil {
+		return nil, err
+	}
+	c.log.Debug("Get target successfully.")
+	return result, nil
+}
+
 func (c *APIClient) errorWithMessage(response *http.Response) error {
-	responseBytes, _ := ioutil.ReadAll(response.Body)
+	responseBytes, _ := io.ReadAll(response.Body)
 	errorMsg := make(map[string]string)
 	json.Unmarshal(responseBytes, &errorMsg)
 	return errors.New(errorMsg["message"])

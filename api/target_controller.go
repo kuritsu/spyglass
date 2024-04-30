@@ -27,10 +27,28 @@ func (t *TargetController) Init(db storage.Provider, log *logr.Logger) {
 
 // Get a target by its ID
 func (t *TargetController) Get(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Query("id")
+	if id == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid parameter: id.",
+		})
+		return
+	}
+	includeChildrenParam := c.Query("includeChildren")
+	includeChildren := false
+	if includeChildrenParam != "" {
+		var ok error
+		includeChildren, ok = strconv.ParseBool(includeChildrenParam)
+		if ok != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Invalid parameter: includeChildren.",
+			})
+			return
+		}
+	}
 	t.db.Init()
 	defer t.db.Free()
-	target, err := t.db.GetTargetByID(id, true)
+	target, err := t.db.GetTargetByID(id, includeChildren)
 	switch {
 	case err != nil:
 		t.log.Error(err)
@@ -115,6 +133,7 @@ func (t *TargetController) Post(c *gin.Context) {
 		})
 		return
 	}
+	t.log.Debug("Inserting in DB...")
 	_, err := t.db.InsertTarget(&target)
 	if err != nil {
 		t.log.Error(err)
@@ -135,7 +154,7 @@ func (t *TargetController) Post(c *gin.Context) {
 
 // Patch the target status
 func (t *TargetController) Patch(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Query("id")
 	var targetPatch types.TargetPatch
 	er := c.ShouldBind(&targetPatch)
 	switch {

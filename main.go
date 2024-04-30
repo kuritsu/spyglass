@@ -41,16 +41,6 @@ func processArgs(cliObj *commands.CommandLineContext) {
 	}
 }
 
-// StringListContains tells whether a contains x.
-func StringListContains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-	return false
-}
-
 /*
 All go programs start running from a function called main.
 */

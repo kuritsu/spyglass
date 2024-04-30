@@ -42,3 +42,8 @@ func (c *CallerMock) UpdateTargetStatus(id string, status int, statusDescription
 	args := c.Called(id, status, statusDescription)
 	return args.Error(0)
 }
+
+func (c *CallerMock) GetTargetByID(id string, includeChildren bool) (types.TargetRef, error) {
+	args := c.Called(id, includeChildren)
+	return &types.Target{}, args.Error(0)
+}

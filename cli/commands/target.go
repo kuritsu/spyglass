@@ -30,6 +30,8 @@ func TargetFlags() *TargetOptions {
 	result := TargetOptions{}
 	result.flagSet = flag.NewFlagSet("target", flag.ContinueOnError)
 	result.actions = make(map[string]Command)
+	result.actions["add"] = TargetAddActionFlags(result.flagSet)
+	result.actions["get"] = TargetGetActionFlags(result.flagSet)
 	result.actions["list"] = TargetListActionFlags(result.flagSet)
 	result.actions["update-status"] = TargetUpdateStatusActionFlags(result.flagSet)
 	result.flagSet.Usage = func() {
@@ -44,8 +46,9 @@ func TargetFlags() *TargetOptions {
 		fmt.Println("Usage:")
 		fmt.Println("  spyglass target [global-flags] <action> ")
 		fmt.Println("\nActions:")
-		fmt.Println("  list: Paginated list of existing targets.")
-		fmt.Println("  update-status: Updates the status of a target.")
+		for k, v := range result.actions {
+			fmt.Printf("  %s: %s\n", k, v.Description())
+		}
 		fmt.Println("\nGlobal Flags:")
 		result.flagSet.PrintDefaults()
 	}

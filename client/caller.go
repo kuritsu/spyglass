@@ -6,7 +6,8 @@ import "github.com/kuritsu/spyglass/api/types"
 type APICaller interface {
 	Init(string)
 	ListTargets(string, int, int) ([]*types.Target, error)
+	GetTargetByID(id string, includeChildren bool) (types.TargetRef, error)
 	InsertOrUpdateMonitor(*types.Monitor) error
-	InsertOrUpdateTarget(*types.Target, bool) error
+	InsertOrUpdateTarget(target *types.Target, forceStatusUpdate bool) error
 	UpdateTargetStatus(string, int, string) error
 }

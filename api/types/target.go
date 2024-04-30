@@ -1,14 +1,12 @@
 package types
 
-import "strings"
+import (
+	"encoding/json"
+	"os"
+	"strings"
 
-// View for targets
-type View struct {
-	ImageBig   string `json:"imageBig,omitempty" bson:"imageBig,omitempty" hcl:"image_big,optional"`
-	ImageSmall string `json:"imageSmall,omitempty" bson:"imageSmall,omitempty" hcl:"image_small,optional"`
-	ColorBig   string `json:"colorBig,omitempty" bson:"colorBig,omitempty" hcl:"color_big,optional"`
-	ColorSmall string `json:"colorSmall,omitempty" bson:"colorSmall,omitempty" hcl:"color_small,optional"`
-}
+	"gopkg.in/yaml.v3"
+)
 
 // MonitorRef is a reference to an existing monitor
 type MonitorRef struct {
@@ -18,19 +16,19 @@ type MonitorRef struct {
 
 // Target full object
 type Target struct {
-	ID                string      `json:"id" binding:"required" hcl:"id,label"`
-	Description       string      `json:"description" binding:"required" hcl:"description"`
-	URL               string      `json:"url,omitempty" bson:",omitempty" hcl:"url,optional"`
-	View              *View       `json:"view,omitempty" bson:",omitempty" hcl:"view,block"`
-	Status            int         `json:"status" hcl:"status,optional"`
-	StatusDescription string      `json:"statusDescription,omitempty" bson:"statusDescription,omitempty" hcl:"status_description,optional"`
-	StatusTotal       int         `json:"-" bson:"statusTotal"`
-	Critical          bool        `json:"critical" hcl:"critical,optional"`
-	Monitor           *MonitorRef `json:"monitor,omitempty" bson:",omitempty" hcl:"monitor,block"`
-	Children          []Target    `json:"children,omitempty" bson:",omitempty"`
-	ChildrenCount     int         `json:"childrenCount" bson:"childrenCount"`
-	Permissions       `hcl:",remain"`
+	ID                string      `json:"id" yaml:"id" binding:"required"`
+	Description       string      `json:"description" yaml:"description" binding:"required"`
+	URL               string      `json:"url,omitempty" yaml:"url,omitempty" bson:",omitempty"`
+	Status            int         `json:"status" yaml:"status"`
+	StatusDescription string      `json:"statusDescription,omitempty" yaml:"statusDescription,omitempty" bson:"statusDescription,omitempty"`
+	Critical          bool        `json:"critical" yaml:"critical"`
+	Monitor           *MonitorRef `json:"monitor,omitempty" bson:",omitempty"`
+	Children          []TargetRef `json:"children,omitempty" yaml:"children,omitempty" bson:",omitempty"`
+	ChildrenRef       []string    `json:"childrenRef,omitempty" yaml:"childrenRef,omitempty" bson:",omitempty"`
+	Permissions
 }
+
+type TargetRef *Target
 
 // TargetPatch represents the fields that can be patched
 type TargetPatch struct {
@@ -40,11 +38,21 @@ type TargetPatch struct {
 
 // GetTargetParentByID obtains the parent ID of a target given its ID
 func GetTargetParentByID(id string) string {
-	parts := strings.Split(id, ".")
+	id = strings.ToLower(id)
+	parts := strings.Split(id, "/")
 	if len(parts) == 1 {
 		return ""
 	}
-	return strings.Join(parts[0:len(parts)-1], ".")
+	return strings.Join(parts[0:len(parts)-1], "/")
+}
+
+// GetShortID for children ref
+func GetShortID(id string) string {
+	parts := strings.Split(id, "/")
+	if len(parts) == 1 {
+		return id
+	}
+	return parts[len(parts)-1]
 }
 
 // GetIDForRegex escapes special chars in the id for regex usage.
@@ -66,4 +74,27 @@ func (s TargetList) Swap(i, j int) {
 
 func (s TargetList) Less(i, j int) bool {
 	return strings.ToLower(s[i].ID) < strings.ToLower(s[j].ID)
+}
+
+func NewTargetFromFile(fileName string) (TargetRef, error) {
+	lowerFileName := strings.ToLower(fileName)
+	result := &Target{}
+	var unmarshalFunc func(in []byte, out interface{}) (err error)
+	switch {
+	case strings.HasSuffix(lowerFileName, ".json"):
+		unmarshalFunc = json.Unmarshal
+	case strings.HasSuffix(lowerFileName, ".yaml") || strings.HasSuffix(lowerFileName, ".yml"):
+		unmarshalFunc = yaml.Unmarshal
+	default:
+		return nil, os.ErrInvalid
+	}
+	raw, err := os.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+	err = unmarshalFunc(raw, result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }

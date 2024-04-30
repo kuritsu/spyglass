@@ -9,4 +9,5 @@ require (
 	go.mongodb.org/mongo-driver v1.4.4
 	go.uber.org/fx v1.13.1
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 )

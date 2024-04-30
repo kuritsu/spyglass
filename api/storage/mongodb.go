@@ -126,7 +126,7 @@ func (p *MongoDB) GetAllMonitors(pageSize int64, pageIndex int64, contains strin
 // GetAllTargets returns all targets which contains a string, paginated.
 func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string) ([]*types.Target, error) {
 	col := p.client.Database("spyglass").Collection("Targets")
-	containsRegex := `^[\w\d\-_]+$`
+	containsRegex := `^[\w\d\-_\.]+$`
 	if contains != "" {
 		containsRegex = types.GetIDForRegex(contains)
 	}
@@ -145,7 +145,6 @@ func (p *MongoDB) GetAllTargets(pageSize int64, pageIndex int64, contains string
 	if err != nil {
 		return nil, err
 	}
-	p.updateTargetListStatus(targets)
 	return targets, nil
 }
 
@@ -170,7 +169,7 @@ func (p *MongoDB) GetTargetByID(id string, includeChildren bool) (*types.Target,
 	expr := bson.M{"id": id}
 	if includeChildren {
 		escapedID := types.GetIDForRegex(id)
-		regx := fmt.Sprintf(`^%s(\.[\w\d_\-]+){0,1}$`, escapedID)
+		regx := fmt.Sprintf(`^%s(/[\w\d_\-\.]+){0,1}$`, escapedID)
 		expr = bson.M{"id": bson.M{"$regex": regx}}
 	}
 	cursor, err := col.Find(p.context, expr)
@@ -185,17 +184,19 @@ func (p *MongoDB) GetTargetByID(id string, includeChildren bool) (*types.Target,
 	if len(targets) == 0 {
 		return nil, nil
 	}
-	p.updateTargetListStatus(targets)
 	var parent *types.Target
-	var children []types.Target
+	var children []types.TargetRef
 	for _, t := range targets {
 		if t.ID == id {
 			parent = t
 			continue
 		}
-		children = append(children, *t)
+		children = append(children, t)
 	}
 	parent.Children = children
+	if includeChildren {
+		parent.ChildrenRef = nil
+	}
 	return parent, err
 }
 
@@ -215,16 +216,20 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 // InsertTarget into the db.
 func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 	target.ID = strings.ToLower(target.ID)
-	target.Children = []types.Target{}
-	target.CreatedAt = time.Now()
-	target.UpdatedAt = time.Now()
 	col := p.client.Database("spyglass").Collection("Targets")
-	if _, err := col.InsertOne(p.context, target); err != nil {
-		p.Log.Errorf("Could not create Target: %v", err)
-		return nil, err
+	allTargets := make([]types.TargetRef, 0, 8)
+	allTargets = append(allTargets, target)
+	allTargets = updateChildrenRefs(target, allTargets)
+	p.Log.Debug("Found ", len(allTargets), " targets.")
+	allObjects := make([]interface{}, len(allTargets))
+	for i := range allTargets {
+		allTargets[i].CreatedAt = time.Now()
+		allTargets[i].UpdatedAt = time.Now()
+		allObjects[i] = allTargets[i]
 	}
-	if err := p.updateParentStatus(target, 1, target.Status); err != nil {
-		p.Log.Errorf("Error updating parents: %v", err)
+	p.Log.Debug("Calling InsertMany...")
+	if _, err := col.InsertMany(p.context, allObjects); err != nil {
+		p.Log.Errorf("Could not create Target: %v", err)
 		return nil, err
 	}
 	return target, nil
@@ -233,7 +238,7 @@ func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 // UpdateMonitor with the modifyable fields.
 func (p *MongoDB) UpdateMonitor(oldMonitor *types.Monitor, newMonitor *types.Monitor) (*types.Monitor, error) {
 	newMonitor.CreatedAt = oldMonitor.CreatedAt
-	newMonitor.Owner = oldMonitor.Owner
+	newMonitor.Owners = oldMonitor.Owners
 	newMonitor.UpdatedAt = time.Now()
 	_, err := p.client.Database("spyglass").Collection("Monitors").UpdateOne(
 		p.context, bson.M{"id": oldMonitor.ID},
@@ -264,11 +269,6 @@ func (p *MongoDB) UpdateTargetStatus(target *types.Target, targetPatch *types.Ta
 	if err != nil {
 		return nil, err
 	}
-	diff := targetPatch.Status - target.Status
-	err = p.updateParentStatus(target, 0, diff)
-	if err != nil {
-		return nil, err
-	}
 	target.Status = targetPatch.Status
 	target.StatusDescription = targetPatch.StatusDescription
 	return target, nil
@@ -280,14 +280,13 @@ func (p *MongoDB) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
 	col := p.client.Database("spyglass").Collection("Targets")
 	newTarget.Permissions.CreatedAt = oldTarget.CreatedAt
 	newTarget.Permissions.UpdatedAt = time.Now()
-	newTarget.Permissions.Owner = oldTarget.Owner
+	newTarget.Permissions.Owners = oldTarget.Owners
 	updateProps := bson.M{
 		"critical":    newTarget.Critical,
 		"description": newTarget.Description,
 		"monitor":     newTarget.Monitor,
 		"permissions": newTarget.Permissions,
 		"url":         newTarget.URL,
-		"view":        newTarget.View,
 	}
 	if forceStatusUpdate {
 		lockedDoc := col.FindOneAndUpdate(p.context, bson.M{"id": oldTarget.ID},
@@ -301,45 +300,27 @@ func (p *MongoDB) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
 	}
 	_, err := col.UpdateOne(p.context, bson.M{"id": oldTarget.ID},
 		bson.M{"$set": updateProps})
-	diff := newTarget.Status - oldTarget.Status
-	err = p.updateParentStatus(newTarget, 0, diff)
 	if err != nil {
 		return nil, err
 	}
 	return newTarget, nil
 }
 
-func (p *MongoDB) updateParentStatus(target *types.Target, childrenCount int, statusInc int) error {
-	parents := strings.Split(target.ID, ".")
-	if len(parents) < 2 {
-		return nil
+func updateChildrenRefs(t *types.Target, result []types.TargetRef) []types.TargetRef {
+	if t.Children == nil || len(t.Children) == 0 {
+		return []types.TargetRef{}
 	}
-	p.Log.Debug(len(parents)-1, " parents need update.")
-	col := p.client.Database("spyglass").Collection("Targets")
-	parentIds := []string{}
-	prefix := ""
-	for idx, parent := range parents[0 : len(parents)-1] {
-		if idx > 0 {
-			prefix = parentIds[idx-1] + "."
-		}
-		parentIds = append(parentIds, prefix+parent)
-		p.Log.Debug(parentIds[idx])
+	var childrenRef []string = make([]string, len(t.Children))
+	result = append(result, t.Children...)
+	totalProgress := 0
+	for i, c := range t.Children {
+		c.ID = fmt.Sprintf("%s/%s", t.ID, strings.ToLower(c.ID))
+		totalProgress += c.Status
+		childrenRef[i] = types.GetShortID(c.ID)
+		updateChildrenRefs(c, result)
 	}
-	updateResult, err := col.UpdateMany(p.context,
-		bson.M{"id": bson.M{"$in": parentIds}},
-		bson.M{"$inc": bson.M{"childrenCount": childrenCount, "statusTotal": statusInc}})
-	p.Log.Debug(updateResult)
-	return err
-}
-
-func (p *MongoDB) updateTargetListStatus(targets []*types.Target) {
-	for _, t := range targets {
-		if t.ChildrenCount > 0 {
-			if t.StatusTotal == 0 {
-				t.Status = 0
-				continue
-			}
-			t.Status = t.StatusTotal * 100 / (t.ChildrenCount * 100)
-		}
-	}
+	t.Status = int(float64(100*totalProgress) / float64(100*len(t.Children)))
+	t.ChildrenRef = childrenRef
+	t.Children = nil
+	return result
 }

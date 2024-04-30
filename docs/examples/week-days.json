@@ -1,0 +1,50 @@
+{
+    "id": "week_days",
+    "description": "Days of the week",
+    "status": 0,
+    "statusDescription": "Progress of the week",
+    "children": [
+        {
+            "id": "sunday",
+            "description": "Sunday",
+            "status": 100,
+            "statusDescription": "Sunday finished"
+        },
+        {
+            "id": "monday",
+            "description": "Monday",
+            "status": 100,
+            "statusDescription": "Monday finished"
+        },
+        {
+            "id": "tuesday",
+            "description": "Tuesday",
+            "status": 50,
+            "statusDescription": "Tuesday noon"
+        },
+        {
+            "id": "wednesday",
+            "description": "Wednesday",
+            "status": 0,
+            "statusDescription": "Day not started"
+        },
+        {
+            "id": "thursday",
+            "description": "Thursday",
+            "status": 0,
+            "statusDescription": "Day not started"
+        },
+        {
+            "id": "friday",
+            "description": "Friday",
+            "status": 0,
+            "statusDescription": "Day not started"
+        },
+        {
+            "id": "saturday",
+            "description": "Saturday",
+            "status": 0,
+            "statusDescription": "Day not started"
+        }
+    ]
+}

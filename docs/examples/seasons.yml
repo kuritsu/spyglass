@@ -1,0 +1,21 @@
+id: seasons
+description: Seasons
+status: 0
+statusDescription: Progress of the seasons
+children:
+- id: spring
+  description: Spring
+  status: 100
+  statusDescription: Spring finished
+- id: summer
+  description: Summer
+  status: 30
+  statusDescription: Summer is on going
+- id: autumn
+  description: Autumn
+  status: 0
+  statusDescription: Autumn not started
+- id: winter
+  description: Winter
+  status: 0
+  statusDescription: Winter not started

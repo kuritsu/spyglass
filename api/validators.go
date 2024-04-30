@@ -6,7 +6,7 @@ var idRegexp *regexp.Regexp
 var idFragRegexp *regexp.Regexp
 
 func init() {
-	idRegexp, _ = regexp.Compile(`^[\w\d\-_]+(\.[\w\d\-_]+)*$`)
+	idRegexp, _ = regexp.Compile(`^[\w\d\-_\.]+(/[\w\d\-_\.]+)*$`)
 	idFragRegexp, _ = regexp.Compile(`^[\w\d\-_\.]+$`)
 }
 
