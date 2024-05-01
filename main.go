@@ -2,6 +2,7 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"io"
 	"os"
@@ -14,6 +15,14 @@ import (
 	"github.com/kuritsu/spyglass/cli/commands"
 	"github.com/kuritsu/spyglass/client"
 	"go.uber.org/fx"
+)
+
+var (
+	//go:embed ui/dist
+	res   embed.FS
+	pages = map[string]string{
+		"/": "ui/dist/index.html",
+	}
 )
 
 func processArgs(cliObj *commands.CommandLineContext) {
@@ -41,6 +50,10 @@ func processArgs(cliObj *commands.CommandLineContext) {
 	}
 }
 
+func createEmbedRes() embed.FS {
+	return res
+}
+
 /*
 All go programs start running from a function called main.
 */
@@ -59,6 +72,7 @@ func main() {
 			},
 			commands.CreateContext,
 			client.Create,
+			createEmbedRes,
 		),
 		fx.Invoke(processArgs),
 	)

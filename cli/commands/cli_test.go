@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"embed"
 	"testing"
 
 	"github.com/kuritsu/spyglass/api/testutil"
@@ -13,7 +14,7 @@ import (
 func TestCommandLine(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 	logger.SetLevel(logrus.DebugLevel)
-	c := CreateContext(&testutil.StorageMock{}, logger, &client.CallerMock{})
+	c := CreateContext(&testutil.StorageMock{}, logger, &client.CallerMock{}, embed.FS{})
 
 	assert.NotNil(t, c)
 	assert.NotNil(t, hook.AllEntries())

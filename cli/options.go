@@ -32,6 +32,7 @@ var logLevelNames = map[string]logr.Level{
 var CommandList = map[string]commands.Command{
 	"server": commands.ServerFlags(),
 	"target": commands.TargetFlags(),
+	"ui":     commands.UIOptionsFlags(),
 }
 
 func defineGlobalFlags(fs *flag.FlagSet, opts *Options) {
