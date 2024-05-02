@@ -11,6 +11,8 @@ export default class TreeItem extends Component {
   @action
   init() {
     this.componentConfig.subscribe(this.onPropChange);
+    this.onPropChange('display', this.componentConfig.get('display'));
+    this.onPropChange('textFilter', this.componentConfig.get('textFilter'));
   }
 
   @action
@@ -35,16 +37,16 @@ export default class TreeItem extends Component {
           this.args.target.children[i].critical &&
           this.args.target.children[i].status != 100
         ) {
-          return 'text-bg-danger';
+          return 'treeViewRed';
         }
       }
     }
     if (this.args.target.status == 0) {
-      return 'text-bg-danger';
+      return 'treeViewRed';
     } else if (this.args.target.status == 100) {
-      return 'text-bg-success';
+      return 'treeViewGreen';
     }
-    return 'text-bg-warning';
+    return 'treeViewYellow';
   }
 
   get Value() {

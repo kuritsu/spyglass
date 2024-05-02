@@ -3,9 +3,7 @@ import Service from '@ember/service';
 export default class ComponentConfigService extends Service {
   constructor() {
     super();
-    this.config = {
-      display: 'ID',
-    };
+    this.config = {};
     this.callBacks = [];
   }
 
@@ -25,6 +23,17 @@ export default class ComponentConfigService extends Service {
   notify(prop, value) {
     this.callBacks.forEach(function (f) {
       f(prop, value);
+    });
+  }
+
+  refreshValues() {
+    console.log(this.config);
+    keys = Object.keys(this.config);
+    values = this.config;
+    keys.forEach(function (k) {
+      this.callBacks.forEach(function (f) {
+        f(k, values[k]);
+      });
     });
   }
 }

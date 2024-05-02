@@ -1,7 +1,7 @@
 /* Ember supports plain CSS out of the box. More info: https://cli.emberjs.com/release/advanced-use/stylesheets/ */
-* {
+/* * {
   color: black;
-}
+} */
 
 .navbar {
   background-color: #fecba1 !important;
@@ -44,7 +44,7 @@
 }
 
 .treeViewRed {
-  background-color: red;
+  background-color: salmon;
 }
 
 .treeViewDetails {

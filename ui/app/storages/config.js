@@ -5,7 +5,9 @@ const Storage = StorageObject.extend();
 Storage.reopenClass({
   initialState() {
     return {
-        reloadTime: 5000
+        display: 'ID',
+        reloadTime: 5000,
+        textFilter: ''
     };
   }
 });

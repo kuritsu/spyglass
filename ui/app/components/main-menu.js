@@ -7,14 +7,24 @@ import { storageFor } from 'ember-local-storage';
 export default class MainMenu extends Component {
   @tracked display = 'ID';
   @tracked reloadTime = 5000;
+  @tracked progressTime = 0;
   @tracked showClass = '';
   @tracked textFilter = '';
+  @tracked timeToRefresh = 0;
   @service componentConfig;
   @storageFor('config') localConfig;
 
   @action
   init() {
-    this.updateReload(this.localConfig.get('reloadTime') / 1000);
+    this.display = this.localConfig.get('display');
+    this.reloadTime = this.localConfig.get('reloadTime');
+    this.textFilter = this.localConfig.get('textFilter');
+    this.componentConfig.update('display', this.display);
+    this.componentConfig.update('reloadTime', this.reloadTime);
+    this.componentConfig.update('textFilter', this.textFilter);
+    if (this.reloadTime > 0) {
+        setTimeout(this.makeProgress, 1000);
+    }
   }
 
   @action
@@ -37,17 +47,21 @@ export default class MainMenu extends Component {
   @action
   updateReload(reloadParam) {
     this.reloadTime = reloadParam * 1000;
+    this.timeToRefresh = 0;
     if (this.reloadTime > 0) {
-      setTimeout(this.refresh, this.reloadTime);
+        setTimeout(this.makeProgress, 1000);
     }
     this.localConfig.set('reloadTime', this.reloadTime);
   }
 
   @action
-  refresh() {
-    location.reload();
-    if (this.reloadTime > 0) {
-      setTimeout(this.refresh, this.reloadTime);
+  makeProgress() {
+    this.timeToRefresh += 1000;
+    if (this.timeToRefresh == this.reloadTime) {
+        window.location.reload();
+    }
+    else {
+        setTimeout(this.makeProgress, 1000);
     }
   }
 
@@ -58,7 +72,13 @@ export default class MainMenu extends Component {
 
   @action
   filterByText(event) {
-    this.textFilter = event.target.value;
-    this.componentConfig.update('textFilter', event.target.value);
+    this.updateTextFilter(event.target.value);
+  }
+
+  @action
+  updateTextFilter(text) {
+    this.textFilter = text;
+    this.componentConfig.update('textFilter', text);
+    this.localConfig.set('textFilter', this.textFilter);
   }
 }

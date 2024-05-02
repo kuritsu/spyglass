@@ -3,11 +3,13 @@
     <label style="font-size: large;">{{@target.description}}</label>
     <br>
     <label style="font-size: small;">{{@target.status}}% ({{@target.statusDescription}})</label>
-    <br>
         {{#if @target.url}}
+        <br>
         <a href={{@target.url}}>Link</a>
         {{/if}}
+    <br>
     {{/if}}
+    <div style="margin-top: 5px;"></div>
     <TreeItem @target={{ @target }} />
 </div>
 <div class="treeViewChildren">

@@ -1,6 +1,6 @@
 <span class="badge treeViewItem {{this.Style}} {{this.show}}" {{did-insert this.init}}>
     <BsTooltip>
-        ({{ @target.status}}%) {{@target.statusDescription}}
+        {{ @target.status}}% ({{@target.statusDescription}})
     </BsTooltip>
     <LinkTo @route="target" @query={{hash id=@target.id}}>
         {{ this.Value }}

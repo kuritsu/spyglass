@@ -1,4 +1,4 @@
-<BsNavbar class="m-0 p-1" as |navbar|>
+<BsNavbar class="m-0 p-1" {{did-insert this.init}} as |navbar|>
   <LinkTo @route="index" class="navbar-brand"><img width="100px" height="40px" src="/logo.png" /></LinkTo>
   <navbar.toggle />
   <navbar.content>
@@ -25,7 +25,7 @@
       </nav.item>
       <nav.item>
         <BsDropdown style="margin: 0px 5px 0px 0px" as |dd| >
-            <dd.button>Reload: {{this.ReloadTime}} <span class="caret"></span></dd.button>
+            <dd.button>Refresh: {{this.ReloadTime}} <span class="caret"></span></dd.button>
             <dd.menu as |ddm|>
                 <ddm.item>
                 <ddm.linkTo {{on "click" (fn this.updateReload 5)}}>Every 5s</ddm.linkTo>
@@ -54,3 +54,8 @@
     </navbar.nav>
   </navbar.content>
 </BsNavbar>
+{{#if this.reloadTime}}
+<BsProgress style="height: 1px;" as |pg| >
+  <pg.bar @value={{this.timeToRefresh}} @minValue={{0}} @maxValue={{this.reloadTime}} aria-label="Loading" class="bg-warning" />
+</BsProgress>
+{{/if}}
