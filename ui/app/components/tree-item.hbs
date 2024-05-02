@@ -1,0 +1,12 @@
+<div class="treeViewItem {{this.Style}}">
+    <BsTooltip>
+        ({{ @target.status}}%) {{@target.description}}
+    </BsTooltip>
+    {{#if @target.url}}
+    <a href={{@target.url}} target="_blank" rel="noopener noreferrer">
+        {{ this.Value }}
+    </a>
+    {{else}}
+        {{ this.Value }}
+    {{/if}}
+</div>

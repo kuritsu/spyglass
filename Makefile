@@ -22,3 +22,10 @@ db-clean:
 .PHONY: api
 api: build
 	bash ./scripts/api.sh
+
+ui-build:
+	cd ui; ember build --environment=production
+
+.PHONY: ui
+ui:
+	./spyglass ui

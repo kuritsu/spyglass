@@ -1,0 +1,14 @@
+<BsDropdown as |dd|>
+    <dd.button>Display: {{this.display}} <span class="caret"></span></dd.button>
+    <dd.menu as |ddm|>
+        <ddm.item>
+        <ddm.linkTo {{on "click" (fn this.updateDisplay 'ID')}}>ID</ddm.linkTo>
+        </ddm.item>
+        <ddm.item>
+        <ddm.linkTo {{on "click" (fn this.updateDisplay 'Status')}}>Status</ddm.linkTo>
+        </ddm.item>
+        <ddm.item>
+        <ddm.linkTo {{on "click" (fn this.updateDisplay 'None')}}>None</ddm.linkTo>
+        </ddm.item>
+    </dd.menu>
+</BsDropdown>

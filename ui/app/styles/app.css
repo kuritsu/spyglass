@@ -1,1 +1,39 @@
 /* Ember supports plain CSS out of the box. More info: https://cli.emberjs.com/release/advanced-use/stylesheets/ */
+* {
+  color: black;
+}
+
+.treeViewItem {
+  padding: 5px;
+  display: inline;
+  margin: 1px;
+}
+
+.treeViewItem > a {
+  font-weight: bold;
+  font-style: normal;
+  color: black;
+  text-decoration: none;
+}
+
+.treeViewChildren {
+  margin-left: 10px;
+  padding: 5px;
+}
+
+.treeViewRoot {
+  display: block;
+  padding: 5px;
+}
+
+.treeViewGreen {
+  background-color: lightgreen;
+}
+
+.treeViewYellow {
+  background-color: yellow;
+}
+
+.treeViewRed {
+  background-color: red;
+}

@@ -11,7 +11,7 @@ Fields:
 - Url: URL of the target 
 - Status (0 - 100, 0 displays as red, 1-99 yellow, 100 green)
 - StatusDescription (String)
-- Critical (boolean/yes, no): Indicates that it will set its parent's status to 0 if it is not in 100.
+- Critical (boolean/yes, no): Indicates that the interface should show RED status of the parent if it is not in 100.
 - Monitor (Gets the status of the target, when using a pull strategy, optional)
   - MonitorId (Id of the monitor)
   - Params (Monitor parameters)
