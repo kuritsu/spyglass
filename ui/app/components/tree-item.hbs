@@ -1,4 +1,4 @@
-<div class="treeViewItem {{this.Style}}">
+<span class="badge treeViewItem {{this.Style}}" {{did-insert this.init}}>
     <BsTooltip>
         ({{ @target.status}}%) {{@target.description}}
     </BsTooltip>
@@ -9,4 +9,4 @@
     {{else}}
         {{ this.Value }}
     {{/if}}
-</div>
+</span>

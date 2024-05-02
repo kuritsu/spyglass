@@ -9,7 +9,7 @@ export default class IndexRoute extends Route {
         status: 30,
         url: 'https://google.com',
         children: [
-          { id: 'sunday', description: 'Sunday', status: 0 },
+          { id: 'sunday', description: 'Sunday', status: 0, critical: true },
           { id: 'monday', description: 'Monday', status: 30 },
           { id: 'tuesday', description: 'Tuesday', status: 100 },
         ],

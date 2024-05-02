@@ -1,8 +1,8 @@
 <div class="treeViewRoot">
-    <TreeItem @target={{ @target }} @display={{ @display }} />
+    <TreeItem @target={{ @target }} />
 </div>
 <div class="treeViewChildren">
     {{#each @target.children as |child|}}
-    <TreeItem @target={{ child }} @display={{ @display }} />
+    <TreeItem @target={{ child }} />
     {{/each}}
 </div>

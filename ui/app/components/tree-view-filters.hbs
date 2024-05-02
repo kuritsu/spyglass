@@ -1,14 +1,55 @@
-<BsDropdown as |dd|>
-    <dd.button>Display: {{this.display}} <span class="caret"></span></dd.button>
-    <dd.menu as |ddm|>
-        <ddm.item>
-        <ddm.linkTo {{on "click" (fn this.updateDisplay 'ID')}}>ID</ddm.linkTo>
-        </ddm.item>
-        <ddm.item>
-        <ddm.linkTo {{on "click" (fn this.updateDisplay 'Status')}}>Status</ddm.linkTo>
-        </ddm.item>
-        <ddm.item>
-        <ddm.linkTo {{on "click" (fn this.updateDisplay 'None')}}>None</ddm.linkTo>
-        </ddm.item>
-    </dd.menu>
-</BsDropdown>
+<BsNavbar class={{this.showClass}} as |navbar|>
+  <navbar.content>
+    <navbar.nav as |nav|>
+      <nav.item>
+        <a class="nav-link disabled" aria-disabled="true">Filters:</a>
+      </nav.item>
+      <nav.item>
+        <BsDropdown style="margin: 0px 5px 0px 0px" as |dd|>
+          <dd.button>Display: {{this.display}} <span class="caret"></span></dd.button>
+          <dd.menu as |ddm|>
+              <ddm.item>
+              <ddm.linkTo {{on "click" (fn this.updateDisplay 'ID')}}>ID</ddm.linkTo>
+              </ddm.item>
+              <ddm.item>
+              <ddm.linkTo {{on "click" (fn this.updateDisplay 'Status')}}>Status</ddm.linkTo>
+              </ddm.item>
+              <ddm.item>
+              <ddm.linkTo {{on "click" (fn this.updateDisplay 'None')}}>None</ddm.linkTo>
+              </ddm.item>
+          </dd.menu>
+        </BsDropdown>
+      </nav.item>
+      <nav.item>
+        <BsDropdown style="margin: 0px 5px 0px 0px" as |dd| >
+            <dd.button>Reload: {{this.ReloadTime}} <span class="caret"></span></dd.button>
+            <dd.menu as |ddm|>
+                <ddm.item>
+                <ddm.linkTo {{on "click" (fn this.updateReload 5)}}>Every 5s</ddm.linkTo>
+                </ddm.item>
+                <ddm.item>
+                <ddm.linkTo {{on "click" (fn this.updateReload 10)}}>Every 10s</ddm.linkTo>
+                </ddm.item>
+                <ddm.item>
+                <ddm.linkTo {{on "click" (fn this.updateReload 30)}}>Every 30s</ddm.linkTo>
+                </ddm.item>
+                <ddm.item>
+                <ddm.linkTo {{on "click" (fn this.updateReload 60)}}>Every 1m</ddm.linkTo>
+                </ddm.item>
+                <ddm.item>
+                <ddm.linkTo {{on "click" (fn this.updateReload 300)}}>Every 5m</ddm.linkTo>
+                </ddm.item>
+                <ddm.item>
+                <ddm.linkTo {{on "click" (fn this.updateReload 0)}}>Never</ddm.linkTo>
+                </ddm.item>
+            </dd.menu>
+        </BsDropdown>
+      </nav.item>
+      <nav.item>
+        <button type="button" class="btn btn-dark" {{on "click" this.hide }}>
+          <BsTooltip>Reload page to display again</BsTooltip>Close
+        </button>
+      </nav.item>
+    </navbar.nav>
+  </navbar.content>
+</BsNavbar>

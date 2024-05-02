@@ -1,5 +1,5 @@
 {{page-title "Home"}}
-<TreeViewFilters @display={{this.display}} @onDisplayChange={{this.onDisplayChange}} />
+<TreeViewFilters />
 {{#each @model as |item|}}
 <TreeView @target={{item}} @display={{this.display}} />
 {{/each}}
