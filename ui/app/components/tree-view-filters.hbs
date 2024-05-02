@@ -1,4 +1,4 @@
-<BsNavbar {{did-insert this.init}} class="bg-primary-subtle {{this.showClass}}" as |navbar|>
+<BsNavbar {{did-insert this.init}} class="{{this.showClass}}" as |navbar|>
   <navbar.content>
     <navbar.nav as |nav|>
       <nav.item>
@@ -50,7 +50,7 @@
         </BsDropdown>
       </nav.item>
       <nav.item>
-        <button type="button" class="btn btn-dark" {{on "click" this.hide }}>
+        <button type="button" class="btn" {{on "click" this.hide }}>
           <BsTooltip>Reload page to display again</BsTooltip>Close
         </button>
       </nav.item>

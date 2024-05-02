@@ -3,6 +3,15 @@
   color: black;
 }
 
+.navbar {
+  background-color: #fecba1 !important;
+}
+
+.dropdown-toggle {
+  background-color: white !important;
+  color: black !important;
+}
+
 .treeViewItem {
   padding: 5px;
   display: inline;
@@ -36,4 +45,8 @@
 
 .treeViewRed {
   background-color: red;
+}
+
+.treeViewDetails {
+  background-color: #ffe5d0;
 }
