@@ -1,11 +1,15 @@
-<BsNavbar class={{this.showClass}} as |navbar|>
+<BsNavbar {{did-insert this.init}} class="bg-primary-subtle {{this.showClass}}" as |navbar|>
   <navbar.content>
     <navbar.nav as |nav|>
       <nav.item>
-        <a class="nav-link disabled" aria-disabled="true">Filters:</a>
+        <a class="nav-link disabled">Filters:</a>
       </nav.item>
       <nav.item>
-        <BsDropdown style="margin: 0px 5px 0px 0px" as |dd|>
+        <input class="form-control" type="text" placeholder="Filter by text" aria-label="filter by text" 
+          value={{this.textFilter}} {{on "keyup" this.filterByText }}>
+      </nav.item>
+      <nav.item>
+        <BsDropdown style="margin: 0px 5px 0px 5px" as |dd|>
           <dd.button>Display: {{this.display}} <span class="caret"></span></dd.button>
           <dd.menu as |ddm|>
               <ddm.item>

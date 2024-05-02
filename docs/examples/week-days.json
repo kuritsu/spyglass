@@ -5,43 +5,43 @@
     "statusDescription": "Progress of the week",
     "children": [
         {
-            "id": "sunday",
+            "id": "1-sunday",
             "description": "Sunday",
             "status": 100,
             "statusDescription": "Sunday finished"
         },
         {
-            "id": "monday",
+            "id": "2-monday",
             "description": "Monday",
             "status": 100,
             "statusDescription": "Monday finished"
         },
         {
-            "id": "tuesday",
+            "id": "3-tuesday",
             "description": "Tuesday",
             "status": 50,
             "statusDescription": "Tuesday noon"
         },
         {
-            "id": "wednesday",
+            "id": "4-wednesday",
             "description": "Wednesday",
             "status": 0,
             "statusDescription": "Day not started"
         },
         {
-            "id": "thursday",
+            "id": "5-thursday",
             "description": "Thursday",
             "status": 0,
             "statusDescription": "Day not started"
         },
         {
-            "id": "friday",
+            "id": "6-friday",
             "description": "Friday",
             "status": 0,
             "statusDescription": "Day not started"
         },
         {
-            "id": "saturday",
+            "id": "7-saturday",
             "description": "Saturday",
             "status": 0,
             "statusDescription": "Day not started"

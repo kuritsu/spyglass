@@ -1,19 +1,9 @@
 import Route from '@ember/routing/route';
 
 export default class IndexRoute extends Route {
-  model() {
-    return [
-      {
-        id: 'weekdays',
-        description: 'Week days',
-        status: 30,
-        url: 'https://google.com',
-        children: [
-          { id: 'sunday', description: 'Sunday', status: 0, critical: true },
-          { id: 'monday', description: 'Monday', status: 30 },
-          { id: 'tuesday', description: 'Tuesday', status: 100 },
-        ],
-      },
-    ];
+  async model() {
+    let response = await fetch('http://localhost:8010/targets');
+    let data = await response.json();
+    return data;
   }
 }

@@ -1,8 +1,17 @@
-<div class="treeViewRoot">
+<div class="treeViewRoot {{if @showDetails 'bg-light'}}">
+    {{#if @showDetails}}
+    <label style="font-size: large;">{{@target.description}}</label>
+    <br>
+    <label style="font-size: small;">{{@target.status}}% ({{@target.statusDescription}})</label>
+    <br>
+        {{#if @target.url}}
+        <a href={{@target.url}}>Link</a>
+        {{/if}}
+    {{/if}}
     <TreeItem @target={{ @target }} />
 </div>
 <div class="treeViewChildren">
     {{#each @target.children as |child|}}
-    <TreeItem @target={{ child }} />
+    <TreeItem @target={{ child }} @parent={{@target.id}} />
     {{/each}}
 </div>

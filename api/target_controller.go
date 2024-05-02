@@ -69,7 +69,7 @@ func (t *TargetController) Get(c *gin.Context) {
 func (t *TargetController) GetAll(c *gin.Context) {
 	t.db.Init()
 	defer t.db.Free()
-	pageSizeString := c.DefaultQuery("pageSize", "10")
+	pageSizeString := c.DefaultQuery("pageSize", "100")
 	pageIndexString := c.DefaultQuery("pageIndex", "0")
 	pageSize, err := strconv.ParseInt(pageSizeString, 10, 64)
 	if err != nil || pageSize > 100 || pageSize < 1 {

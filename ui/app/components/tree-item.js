@@ -6,17 +6,26 @@ import { action } from '@ember/object';
 export default class TreeItem extends Component {
   @tracked display = 'ID';
   @service componentConfig;
+  @tracked show = '';
 
   @action
   init() {
-    console.log(this.componentConfig);
     this.componentConfig.subscribe(this.onPropChange);
   }
 
   @action
   onPropChange(prop, value) {
-    if (prop != 'display') { return; }
-    this.display = value;
+    if (prop == 'display') {
+      this.display = value;
+    }
+    if (prop == 'textFilter') {
+      this.show =
+        JSON.stringify(this.args.target)
+          .toLowerCase()
+          .indexOf(value.toLowerCase()) != -1
+          ? ''
+          : 'd-none';
+    }
   }
 
   get Style() {
@@ -41,7 +50,11 @@ export default class TreeItem extends Component {
   get Value() {
     switch (this.display) {
       case 'ID':
-        return this.args.target.id;
+        let result = this.args.target.id;
+        if (this.args.parent) {
+          result = result.substring(this.args.parent.length + 1);
+        }
+        return result;
       case 'Status':
         return this.args.target.status;
       default:

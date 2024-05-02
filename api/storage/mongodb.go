@@ -228,7 +228,7 @@ func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 		allObjects[i] = allTargets[i]
 	}
 	p.Log.Debug("Calling InsertMany...")
-	if _, err := col.InsertMany(p.context, allObjects); err != nil {
+	if _, err := col.InsertMany(p.context, allObjects, options.InsertMany()); err != nil {
 		p.Log.Errorf("Could not create Target: %v", err)
 		return nil, err
 	}

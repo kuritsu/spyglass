@@ -27,6 +27,7 @@ func (api *API) Serve() *gin.Engine {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.Default()
+	r.Use(CORSMiddleware())
 	monitors := MonitorController{}
 	targets := TargetController{}
 	monitors.Init(api.db, api.log)

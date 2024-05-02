@@ -1,11 +1,8 @@
-<BsNavbar as |navbar|>
+<BsNavbar class="bg-primary-subtle" as |navbar|>
   <LinkTo @route="index" class="navbar-brand">Spyglass</LinkTo>
   <navbar.toggle />
   <navbar.content>
     <navbar.nav as |nav|>
-      <nav.item>
-        <nav.link-to @route="index">Home</nav.link-to>
-      </nav.item>
       <nav.item>
         <nav.link-to @route="about">About</nav.link-to>
       </nav.item>
