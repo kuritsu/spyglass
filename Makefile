@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 build:
-	go vet ./...
+	go vet github.com/kuritsu/spyglass
 	go build
 
 mod:

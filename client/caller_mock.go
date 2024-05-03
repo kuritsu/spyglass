@@ -47,3 +47,8 @@ func (c *CallerMock) GetTargetByID(id string, includeChildren bool) (types.Targe
 	args := c.Called(id, includeChildren)
 	return &types.Target{}, args.Error(0)
 }
+
+func (c *CallerMock) Login(email string, password string) (string, error) {
+	args := c.Called(email, password)
+	return "", args.Error(0)
+}

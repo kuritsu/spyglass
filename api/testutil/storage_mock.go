@@ -90,3 +90,9 @@ func (m *StorageMock) UpdateTarget(oldTarget *types.Target, newTarget *types.Tar
 	}
 	return res.(*types.Target), nil
 }
+
+// UpdateTarget with also a status update force flag.
+func (m *StorageMock) Login(email string, password string) error {
+	m.Called(email, password)
+	return nil
+}

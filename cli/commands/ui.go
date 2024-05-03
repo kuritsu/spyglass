@@ -38,7 +38,7 @@ func (o *UIOptions) Apply(c *CommandLineContext) runner.Runner {
 	c.Log.Info("Listening on ", o.Address, "...")
 	content, _ := fs.Sub(c.res, "ui/dist")
 	fserver := http.FileServer(http.FS(content))
-	http.Handle("/scientists", http.StripPrefix("/scientists", fserver))
+	http.Handle("/target", http.StripPrefix("/target", fserver))
 	http.Handle("/", fserver)
 	err := http.ListenAndServe(o.Address, nil)
 	if err != nil {

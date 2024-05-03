@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -9,11 +10,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/google/uuid"
 	"github.com/kuritsu/spyglass/api/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -89,6 +92,64 @@ func (p *MongoDB) createIndexes() {
 	}
 	p.client.Database("spyglass").Collection("Targets").
 		Indexes().CreateMany(p.context, targetIndexes, nil)
+
+	roleIndex := []mongo.IndexModel{
+		{
+			Keys:    bson.M{"name": 1},
+			Options: options.Index().SetUnique(true),
+		},
+	}
+
+	roleCollection := p.client.Database("spyglass").Collection("Roles")
+	roleCollection.Indexes().CreateMany(p.context, roleIndex, nil)
+
+	adminsRole := types.Role{
+		Name:        "admins",
+		Description: "Administrators",
+		Permissions: types.Permissions{
+			Owners:    []string{"admins"},
+			Readers:   []string{"admins"},
+			Writers:   []string{"admins"},
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+	_, err := roleCollection.InsertOne(p.context, adminsRole)
+	if err != nil {
+		p.Log.Error(err)
+	} else {
+		p.Log.Info("Inserted role admins.")
+	}
+
+	userIndex := []mongo.IndexModel{
+		{
+			Keys:    bson.M{"email": 1},
+			Options: options.Index().SetUnique(true),
+		},
+	}
+	userCollection := p.client.Database("spyglass").Collection("Users")
+	userCollection.Indexes().CreateMany(p.context, userIndex, nil)
+	epwd, _ := bcrypt.GenerateFromPassword([]byte("admin"), 14)
+	adminUser := types.User{
+		Email:     "admin@spyglass.com",
+		FullName:  "Administrator",
+		Roles:     []string{"admins"},
+		PassHash:  string(epwd),
+		FirstHash: string(epwd),
+		Permissions: types.Permissions{
+			Owners:    []string{"admins"},
+			Readers:   []string{"admins"},
+			Writers:   []string{"admins"},
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+	_, err = userCollection.InsertOne(p.context, adminUser)
+	if err != nil {
+		p.Log.Error(err)
+	} else {
+		p.Log.Info("Inserted user admin@spyglass.com.")
+	}
 }
 
 // Free db connection
@@ -304,6 +365,67 @@ func (p *MongoDB) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
 		return nil, err
 	}
 	return newTarget, nil
+}
+
+func (p *MongoDB) Login(email string, password string) (*types.User, error) {
+	col := p.client.Database("spyglass").Collection("Users")
+	expr := bson.M{"email": email}
+	res := col.FindOne(p.context, expr)
+	if res.Err() != nil {
+		p.Log.Error(res.Err())
+		if errors.Is(res.Err(), mongo.ErrNoDocuments) {
+			return nil, fmt.Errorf("InvalidCredentials")
+		} else {
+			return nil, res.Err()
+		}
+	}
+	var user types.User
+	res.Decode(&user)
+	err := bcrypt.CompareHashAndPassword([]byte(user.PassHash), []byte(password))
+	if err != nil {
+		return nil, fmt.Errorf("InvalidCredentials")
+	}
+	return &user, nil
+}
+
+func (p *MongoDB) CreateUserToken(user *types.User) (string, error) {
+	tokenUuid := uuid.NewString()
+	tokenHash, _ := bcrypt.GenerateFromPassword([]byte(tokenUuid), 14)
+	token := types.UserToken{
+		Expiration: time.Now().UTC().Add(time.Hour * 24),
+		TokenHash:  string(tokenHash),
+	}
+	user.Token = &token
+	_, err := p.client.Database("spyglass").Collection("Users").UpdateOne(
+		p.context, bson.M{"email": user.Email}, bson.M{"$set": user})
+	if err != nil {
+		return "", err
+	}
+	return tokenUuid, nil
+}
+
+func (p *MongoDB) ValidateToken(email string, token string) error {
+	col := p.client.Database("spyglass").Collection("Users")
+	expr := bson.M{"email": email}
+	res := col.FindOne(p.context, expr)
+	if res.Err() != nil {
+		p.Log.Error(res.Err())
+		if errors.Is(res.Err(), mongo.ErrNoDocuments) {
+			return fmt.Errorf("InvalidCredentials")
+		} else {
+			return res.Err()
+		}
+	}
+	var user types.User
+	res.Decode(&user)
+	if user.Token == nil {
+		return fmt.Errorf("InvalidCredentials")
+	}
+	err := bcrypt.CompareHashAndPassword([]byte(user.Token.TokenHash), []byte(token))
+	if err != nil || user.Token.Expiration.Before(time.Now().UTC()) {
+		return fmt.Errorf("InvalidCredentials")
+	}
+	return nil
 }
 
 func updateChildrenRefs(t *types.Target, result []types.TargetRef) []types.TargetRef {

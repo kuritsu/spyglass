@@ -30,18 +30,23 @@ func (api *API) Serve() *gin.Engine {
 	r.Use(CORSMiddleware())
 	monitors := MonitorController{}
 	targets := TargetController{}
+	users := UserController{}
 	monitors.Init(api.db, api.log)
 	targets.Init(api.db, api.log)
+	users.Init(api.db, api.log)
 
-	r.GET("/monitors/:id", monitors.Get)
-	r.GET("/monitors", monitors.GetAll)
-	r.POST("/monitors", monitors.Post)
-	r.PUT("/monitors/:id", monitors.Put)
-	r.GET("/target", targets.Get)
-	r.GET("/targets", targets.GetAll)
-	r.PATCH("/target", targets.Patch)
-	r.POST("/targets", targets.Post)
-	r.PUT("/target", targets.Put)
+	authMid := AuthMiddleware(api.db, api.log)
+
+	r.GET("/monitors/:id", authMid, monitors.Get)
+	r.GET("/monitors", authMid, monitors.GetAll)
+	r.POST("/monitors", authMid, monitors.Post)
+	r.PUT("/monitors/:id", authMid, monitors.Put)
+	r.GET("/target", authMid, targets.Get)
+	r.GET("/targets", authMid, targets.GetAll)
+	r.PATCH("/target", authMid, targets.Patch)
+	r.POST("/targets", authMid, targets.Post)
+	r.PUT("/target", authMid, targets.Put)
+	r.POST("/login", users.Login)
 
 	return r
 }
