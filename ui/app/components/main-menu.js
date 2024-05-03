@@ -11,7 +11,9 @@ export default class MainMenu extends Component {
   @tracked showClass = '';
   @tracked textFilter = '';
   @tracked timeToRefresh = 0;
+  @tracked user = '';
   @service componentConfig;
+  @service router;
   @storageFor('config') localConfig;
 
   @action
@@ -19,6 +21,7 @@ export default class MainMenu extends Component {
     this.display = this.localConfig.get('display');
     this.reloadTime = this.localConfig.get('reloadTime');
     this.textFilter = this.localConfig.get('textFilter');
+    this.user = this.localConfig.get('user');
     this.componentConfig.update('display', this.display);
     this.componentConfig.update('reloadTime', this.reloadTime);
     this.componentConfig.update('textFilter', this.textFilter);
@@ -65,11 +68,6 @@ export default class MainMenu extends Component {
   }
 
   @action
-  hide() {
-    this.showClass = 'd-none';
-  }
-
-  @action
   filterByText(event) {
     this.updateTextFilter(event.target.value);
   }
@@ -79,5 +77,12 @@ export default class MainMenu extends Component {
     this.textFilter = text;
     this.componentConfig.update('textFilter', text);
     this.localConfig.set('textFilter', this.textFilter);
+  }
+
+  @action
+  LogOut() {
+    this.localConfig.set('user', '');
+    this.localConfig.set('token', '');
+    this.router.transitionTo('login');
   }
 }

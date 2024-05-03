@@ -48,6 +48,17 @@
             </dd.menu>
         </BsDropdown>
       </nav.item>
+        <BsDropdown style="margin: 0px 5px 0px 0px" as |dd|>
+          <dd.button>{{this.user}} <span class="caret"></span></dd.button>
+          <dd.menu as |ddm|>
+              <ddm.item>
+              <ddm.linkTo {{on "click" this.LogOut}}>Log out</ddm.linkTo>
+              </ddm.item>
+              <ddm.item>
+              <ddm.linkTo {{on "click" this.ChangePassword}}>Change password</ddm.linkTo>
+              </ddm.item>
+          </dd.menu>
+        </BsDropdown>
       <nav.item>
         <nav.link-to @route="about">About</nav.link-to>
       </nav.item>
