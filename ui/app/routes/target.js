@@ -1,6 +1,9 @@
 import Route from '@ember/routing/route';
+import { service } from '@ember/service';
 
 export default class TargetRoute extends Route {
+  @service api;
+
   queryParams = {
     id: {
       refreshModel: true,
@@ -8,9 +11,7 @@ export default class TargetRoute extends Route {
   };
 
   async model(params) {
-    let response = await fetch(
-      `http://localhost:8010/target?id=${params['id']}&includeChildren=true`,
-    );
+    let response = await this.api.GetTarget(params.id);
     let data = await response.json();
     return data;
   }

@@ -11,6 +11,7 @@ module.exports = function (defaults) {
   });
 
   app.import('node_modules/bootstrap/dist/css/bootstrap.css');
+  app.import('node_modules/bootstrap-icons/font/bootstrap-icons.css');
 
   return app.toTree();
 };

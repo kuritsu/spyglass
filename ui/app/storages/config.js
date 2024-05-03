@@ -5,11 +5,13 @@ const Storage = StorageObject.extend();
 Storage.reopenClass({
   initialState() {
     return {
-        display: 'ID',
-        reloadTime: 5000,
-        textFilter: ''
+      display: 'ID',
+      reloadTime: 5000,
+      textFilter: '',
+      user: '',
+      token: '',
     };
-  }
+  },
 });
 
 export default Storage;

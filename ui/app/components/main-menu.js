@@ -23,7 +23,7 @@ export default class MainMenu extends Component {
     this.componentConfig.update('reloadTime', this.reloadTime);
     this.componentConfig.update('textFilter', this.textFilter);
     if (this.reloadTime > 0) {
-        setTimeout(this.makeProgress, 1000);
+      setTimeout(this.makeProgress, 1000);
     }
   }
 
@@ -49,7 +49,7 @@ export default class MainMenu extends Component {
     this.reloadTime = reloadParam * 1000;
     this.timeToRefresh = 0;
     if (this.reloadTime > 0) {
-        setTimeout(this.makeProgress, 1000);
+      setTimeout(this.makeProgress, 1000);
     }
     this.localConfig.set('reloadTime', this.reloadTime);
   }
@@ -58,10 +58,9 @@ export default class MainMenu extends Component {
   makeProgress() {
     this.timeToRefresh += 1000;
     if (this.timeToRefresh == this.reloadTime) {
-        window.location.reload();
-    }
-    else {
-        setTimeout(this.makeProgress, 1000);
+      window.location.reload();
+    } else {
+      setTimeout(this.makeProgress, 1000);
     }
   }
 
