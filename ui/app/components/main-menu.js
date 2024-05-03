@@ -61,10 +61,10 @@ export default class MainMenu extends Component {
   makeProgress() {
     this.timeToRefresh += 1000;
     if (this.timeToRefresh == this.reloadTime) {
-      window.location.reload();
-    } else {
-      setTimeout(this.makeProgress, 1000);
+      this.router.refresh(this.router.currentRouteName);
+      this.timeToRefresh = 0;
     }
+    setTimeout(this.makeProgress, 1000);
   }
 
   @action
