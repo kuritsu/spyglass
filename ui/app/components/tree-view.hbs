@@ -8,12 +8,14 @@
         <a href={{@target.url}}>Link</a>
         {{/if}}
     <br>
-    {{/if}}
     <div style="margin-top: 5px;"></div>
+    {{/if}}
     <TreeItem @target={{ @target }} />
 </div>
+{{#if @target.children}}
 <div class="treeViewChildren">
     {{#each @target.children as |child|}}
     <TreeItem @target={{ child }} @parent={{@target.id}} />
     {{/each}}
 </div>
+{{/if}}
