@@ -150,6 +150,15 @@ func (p *MongoDB) createIndexes() {
 	} else {
 		p.Log.Info("Inserted user admin@spyglass.com.")
 	}
+
+	tokenIndex := []mongo.IndexModel{
+		{
+			Keys:    bson.M{"email": 1},
+			Options: options.Index(),
+		},
+	}
+	tokenCollection := p.client.Database("spyglass").Collection("Tokens")
+	tokenCollection.Indexes().CreateMany(p.context, tokenIndex, nil)
 }
 
 // Free db connection
@@ -392,12 +401,12 @@ func (p *MongoDB) CreateUserToken(user *types.User) (string, error) {
 	tokenUuid := uuid.NewString()
 	tokenHash, _ := bcrypt.GenerateFromPassword([]byte(tokenUuid), 14)
 	token := types.UserToken{
+		Email:      user.Email,
 		Expiration: time.Now().UTC().Add(time.Hour * 24),
 		TokenHash:  string(tokenHash),
 	}
-	user.Token = &token
-	_, err := p.client.Database("spyglass").Collection("Users").UpdateOne(
-		p.context, bson.M{"email": user.Email}, bson.M{"$set": user})
+	_, err := p.client.Database("spyglass").Collection("Tokens").InsertOne(
+		p.context, token)
 	if err != nil {
 		return "", err
 	}
@@ -405,27 +414,29 @@ func (p *MongoDB) CreateUserToken(user *types.User) (string, error) {
 }
 
 func (p *MongoDB) ValidateToken(email string, token string) error {
-	col := p.client.Database("spyglass").Collection("Users")
+	col := p.client.Database("spyglass").Collection("Tokens")
 	expr := bson.M{"email": email}
-	res := col.FindOne(p.context, expr)
-	if res.Err() != nil {
-		p.Log.Error(res.Err())
-		if errors.Is(res.Err(), mongo.ErrNoDocuments) {
+	cursor, err := col.Find(p.context, expr)
+	if err != nil {
+		p.Log.Error(err)
+		if errors.Is(err, mongo.ErrNoDocuments) {
 			return fmt.Errorf("InvalidCredentials")
 		} else {
-			return res.Err()
+			return err
 		}
 	}
-	var user types.User
-	res.Decode(&user)
-	if user.Token == nil {
-		return fmt.Errorf("InvalidCredentials")
+	tokens := make([]*types.UserToken, 0)
+	err = cursor.All(p.context, &tokens)
+	if err != nil {
+		return err
 	}
-	err := bcrypt.CompareHashAndPassword([]byte(user.Token.TokenHash), []byte(token))
-	if err != nil || user.Token.Expiration.Before(time.Now().UTC()) {
-		return fmt.Errorf("InvalidCredentials")
+	for _, t := range tokens {
+		err := bcrypt.CompareHashAndPassword([]byte(t.TokenHash), []byte(token))
+		if err == nil && t.Expiration.After(time.Now().UTC()) {
+			return nil
+		}
 	}
-	return nil
+	return fmt.Errorf("InvalidCredentials")
 }
 
 func updateChildrenRefs(t *types.Target, result []types.TargetRef) []types.TargetRef {
