@@ -6,16 +6,23 @@ export default class IndexRoute extends Route {
   @service api;
 
   async model() {
-    let response = await this.api.ListTargets();
-    let data = await response.json();
-    if (response.status == 403) { // Forbidden
-      this.api.LogOut();
-      return null;
+    try {
+      this.componentConfig.update('fetchError', '');
+      let response = await this.api.ListTargets();
+      let data = await response.json();
+      if (response.status == 403) {
+        // Forbidden
+        this.api.LogOut();
+        return null;
+      }
+      if (!response.ok) {
+        this.componentConfig.update('fetchError', data.message);
+        return [];
+      }
+      return data;
+    } catch (err) {
+      this.componentConfig.update('fetchError', (err instanceof TypeError) ? "Network error." : err);
+      return [];
     }
-    if (!response.ok) {
-      this.componentConfig.update('modelError', data.message);
-      return null;
-    }
-    return data;
   }
 }

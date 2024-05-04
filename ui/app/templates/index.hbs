@@ -3,8 +3,14 @@
 <TreeView @target={{item}} @display={{this.display}} />
 {{/each}}
 
+{{#unless @model}}
+<div class="alert alert-warning" role="alert">
+  No targets found.
+</div>
+{{/unless}}
+
 {{#if this.error}}
-<div class="alert alert-danger" role="alert">
+<div class="alert alert-danger" style="margin: 5px !important;" role="alert">
     <i class="bi-exclamation-triangle-fill"></i> {{this.error}}
 </div>
 {{/if}}

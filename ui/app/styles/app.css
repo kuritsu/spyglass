@@ -51,3 +51,7 @@
 .treeViewDetails {
   background-color: #ffe5d0;
 }
+
+.alert {
+  margin: 5px !important;
+}

@@ -15,10 +15,10 @@ export default class LoginController extends Controller {
   @action
   async Login() {
     this.error = '';
-    let response = await this.api.Login(this.email, this.password)
+    let response = await this.api.Login(this.email, this.password);
     if (!response.ok) {
-        this.error = data.message;
-        return;
+      this.error = data.message;
+      return;
     }
     let data = await response.json();
     this.localConfig.set('user', this.email);
