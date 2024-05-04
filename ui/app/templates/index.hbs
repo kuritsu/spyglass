@@ -1,4 +1,10 @@
-{{page-title "Home"}}
+{{page-title "Spyglass"}}
 {{#each @model as |item|}}
 <TreeView @target={{item}} @display={{this.display}} />
 {{/each}}
+
+{{#if this.error}}
+<div class="alert alert-danger" role="alert">
+    <i class="bi-exclamation-triangle-fill"></i> {{this.error}}
+</div>
+{{/if}}

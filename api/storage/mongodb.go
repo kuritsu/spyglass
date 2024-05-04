@@ -21,7 +21,7 @@ import (
 
 const (
 	// Timeout operations after N seconds
-	connectTimeout = 5
+	connectTimeout = 30
 )
 
 // MongoDB provider
@@ -131,7 +131,7 @@ func (p *MongoDB) createIndexes() {
 	userCollection.Indexes().CreateMany(p.context, userIndex, nil)
 	epwd, _ := bcrypt.GenerateFromPassword([]byte("admin"), 14)
 	adminUser := types.User{
-		Email:     "admin@spyglass.com",
+		Email:     "admin",
 		FullName:  "Administrator",
 		Roles:     []string{"admins"},
 		PassHash:  string(epwd),

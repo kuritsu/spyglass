@@ -1,2 +1,8 @@
 {{page-title "Target"}}
 <TreeView @target={{@model}} @showDetails={{true}} />
+
+{{#if this.error}}
+<div class="alert alert-danger" role="alert">
+    <i class="bi-exclamation-triangle-fill"></i> {{this.error}}
+</div>
+{{/if}}

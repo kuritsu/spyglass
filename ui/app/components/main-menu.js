@@ -14,6 +14,7 @@ export default class MainMenu extends Component {
   @tracked user = '';
   @service componentConfig;
   @service router;
+  @service api;
   @storageFor('config') localConfig;
 
   @action
@@ -81,8 +82,6 @@ export default class MainMenu extends Component {
 
   @action
   LogOut() {
-    this.localConfig.set('user', '');
-    this.localConfig.set('token', '');
-    this.router.transitionTo('login');
+    this.api.LogOut();
   }
 }

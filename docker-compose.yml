@@ -13,11 +13,3 @@ services:
     ports:
       - 27017:27017
 
-  mongodb:
-    image: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: spyglass
-      ME_CONFIG_MONGODB_ADMINPASSWORD: spyglass

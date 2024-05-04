@@ -1,8 +1,10 @@
 import Service from '@ember/service';
+import { service } from '@ember/service';
 import { storageFor } from 'ember-local-storage';
 
 export default class ApiService extends Service {
     @storageFor('config') localConfig;
+    @service router;
 
     async Login(email, password) {
         let reqHeaders = new Headers();
@@ -16,6 +18,12 @@ export default class ApiService extends Service {
             headers: reqHeaders,
         });
         return response
+    }
+
+    LogOut() {
+        this.localConfig.set('user', '');
+        this.localConfig.set('token', '');
+        this.router.transitionTo('login');
     }
 
     getToken() {
