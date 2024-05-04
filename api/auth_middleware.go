@@ -28,7 +28,10 @@ func AuthMiddleware(db storage.Provider, log *logr.Logger) gin.HandlerFunc {
 			return
 		}
 		db.Init()
+		defer db.Free()
+		log.Debug("Validating token for ", before)
 		err := db.ValidateToken(before, after)
+		log.Debug("Finished validation.")
 		if err != nil {
 			log.Error(err)
 			c.JSON(http.StatusForbidden, gin.H{

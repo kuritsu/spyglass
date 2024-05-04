@@ -4,6 +4,6 @@ import "time"
 
 type UserToken struct {
 	Email      string    `json:"email" binding:"required"`
-	TokenHash  string    `json:"tokenHash" binding:"required" bson:"tokenHash"`
+	Token      string    `json:"token" binding:"required" bson:"token"`
 	Expiration time.Time `json:"expiration" binding:"required"`
 }
