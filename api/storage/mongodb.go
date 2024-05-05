@@ -456,6 +456,49 @@ func (p *MongoDB) ValidateToken(email string, token string) error {
 	return fmt.Errorf("InvalidCredentials")
 }
 
+func (p *MongoDB) GetUser(email string) (*types.User, error) {
+	expr := bson.M{"email": email}
+	res := p.client.Database("spyglass").Collection("Users").FindOne(p.context, expr)
+	if res.Err() != nil {
+		p.Log.Error(res.Err())
+		if errors.Is(res.Err(), mongo.ErrNoDocuments) {
+			return nil, fmt.Errorf("InvalidUser")
+		} else {
+			return nil, res.Err()
+		}
+	}
+	var user types.User
+	err := res.Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (p *MongoDB) UpdateUser(user *types.User, oldPassword, newPassword string) error {
+	if oldPassword != "" {
+		err := bcrypt.CompareHashAndPassword([]byte(user.PassHash), []byte(oldPassword))
+		if err != nil {
+			return fmt.Errorf("Invalid credentials")
+		}
+		epwd, err := bcrypt.GenerateFromPassword([]byte(newPassword), 14)
+		if err != nil {
+			return fmt.Errorf("Encryption Error")
+		}
+		user.PassHash = string(epwd)
+	}
+	user.Permissions.UpdatedAt = time.Now()
+	_, err := p.client.Database("spyglass").Collection("Users").UpdateOne(
+		p.context, bson.M{"email": user.Email},
+		bson.M{"$set": user})
+	if err != nil {
+		p.Log.Errorf("Could not update user: %v", err)
+		return err
+	}
+	return nil
+
+}
+
 func updateChildrenRefs(t *types.Target, result []types.TargetRef) []types.TargetRef {
 	if t.Children == nil || len(t.Children) == 0 {
 		return []types.TargetRef{}

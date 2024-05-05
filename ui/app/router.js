@@ -10,4 +10,5 @@ Router.map(function () {
   this.route('about');
   this.route('target');
   this.route('login');
+  this.route('settings');
 });

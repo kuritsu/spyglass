@@ -1,0 +1,43 @@
+{{page-title "User settings"}}
+
+<div class="container text-center m-4">
+    <LinkTo @route="index" class="navbar-brand"><img width="100px" height="40px" src="/logo.png" /></LinkTo>
+</div>
+<form id="passwordChange">
+    <div class="container m-4">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <label for="inputOldPassword" class="form-label">Old password</label>
+                <Input @type="password" id="inputOldPassword" class="form-control"
+                    @value={{this.oldPassword}}
+                    aria-describedby="old password" autofocus required />
+                <label for="inputNewPassword" class="form-label">New password</label>
+                <Input @type="password" id="inputNewPassword" class="form-control"
+                    @value={{this.newPassword}}
+                    aria-describedby="new password" required />
+                <label for="inputConfirmPassword" class="form-label">Confirm password</label>
+                <Input @type="password" id="inputConfirmPassword" class="form-control"
+                    @value={{this.confirmPassword}}
+                    aria-describedby="confirm password" required />
+            </div>
+            <div class="col"></div>
+        </div>
+        <div class="row m-3">
+            <div class="col" style="text-align: center;">
+                <button type="submit" class="btn btn-primary" {{on 'click' this.Update }}>Update</button>
+            </div>
+        </div>
+        <div>
+            <div class="col"></div>
+            <div class="col">
+                {{#if this.error}}
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi-exclamation-triangle-fill"></i> {{this.error}}
+                </div>
+                {{/if}}
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+</form>

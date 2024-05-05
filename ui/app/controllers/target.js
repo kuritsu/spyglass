@@ -4,19 +4,19 @@ import { service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
 
 export default class TargetController extends Controller {
-    @tracked error;
-    @service componentConfig;
+  @tracked error;
+  @service componentConfig;
 
-    init(params) {
-        super.init(params);
-        this.componentConfig.subscribe(this.onConfigChange);
-    }
+  init(params) {
+    super.init(params);
+    this.componentConfig.subscribe(this.onConfigChange);
+  }
 
-    @action
-    onConfigChange(prop, value) {
-        if (prop != 'fetchError') {
-            return;
-        }
-        this.error = value;
+  @action
+  onConfigChange(prop, value) {
+    if (prop != 'fetchError') {
+      return;
     }
+    this.error = value;
+  }
 }

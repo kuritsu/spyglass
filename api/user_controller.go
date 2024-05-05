@@ -94,3 +94,30 @@ func (t *UserController) Register(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, token)
 }
+
+func (t *UserController) Update(c *gin.Context) {
+	var userUpdate types.UserUpdateRequest
+	if er := c.ShouldBind(&userUpdate); er != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": er.Error(),
+		})
+		return
+	}
+	t.db.Init()
+	defer t.db.Free()
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	if userUpdate.FullName != "" {
+		user.FullName = userUpdate.FullName
+	}
+	err := t.db.UpdateUser(user, userUpdate.OldPassword, userUpdate.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"updateAt": user.Permissions.UpdatedAt,
+	})
+}

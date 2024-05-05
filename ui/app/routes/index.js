@@ -21,7 +21,10 @@ export default class IndexRoute extends Route {
       }
       return data;
     } catch (err) {
-      this.componentConfig.update('fetchError', (err instanceof TypeError) ? "Network error." : err);
+      this.componentConfig.update(
+        'fetchError',
+        err instanceof TypeError ? 'Network error.' : err,
+      );
       return [];
     }
   }

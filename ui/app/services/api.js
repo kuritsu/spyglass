@@ -9,7 +9,7 @@ export default class ApiService extends Service {
   async Login(email, password) {
     let reqHeaders = new Headers();
     reqHeaders.set('Content-Type', 'application/json');
-    let response = await fetch('http://localhost:8010/login', {
+    let response = await fetch('http://localhost:8010/user/login', {
       method: 'POST',
       body: JSON.stringify({
         email: email,
@@ -23,11 +23,26 @@ export default class ApiService extends Service {
   async Register(email, password) {
     let reqHeaders = new Headers();
     reqHeaders.set('Content-Type', 'application/json');
-    let response = await fetch('http://localhost:8010/register', {
+    let response = await fetch('http://localhost:8010/user/register', {
       method: 'POST',
       body: JSON.stringify({
         email: email,
         password: password,
+      }),
+      headers: reqHeaders,
+    });
+    return response;
+  }
+
+  async UpdateUser(fullName, oldPassword, newPassword) {
+    let email = this.localConfig.get('user')
+    let reqHeaders = this.createHeaders();
+    let response = await fetch(`http://localhost:8010/user/${email}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        fullName,
+        oldPassword,
+        newPassword,
       }),
       headers: reqHeaders,
     });

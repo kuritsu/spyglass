@@ -47,8 +47,9 @@ func (api *API) Serve() *gin.Engine {
 	r.PATCH("/target", authMid, targets.Patch)
 	r.POST("/targets", authMid, targets.Post)
 	r.PUT("/target", authMid, targets.Put)
-	r.POST("/login", users.Login)
-	r.POST("/register", users.Register)
+	r.POST("/user/login", users.Login)
+	r.POST("/user/register", users.Register)
+	r.PATCH("/user/:id", authMid, users.Update)
 
 	return r
 }

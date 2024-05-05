@@ -203,7 +203,7 @@ func (c *APIClient) Login(email string, password string) (string, error) {
 	}
 	bodyBytes, _ := json.Marshal(userPwdDict)
 	reader := strings.NewReader(string(bodyBytes))
-	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/login", c.url), reader)
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/user/login", c.url), reader)
 	request.Header["Content-Type"] = []string{"application/json"}
 	response, err := c.client.Do(request)
 	if err != nil {

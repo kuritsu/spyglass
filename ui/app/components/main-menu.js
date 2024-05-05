@@ -22,7 +22,6 @@ export default class MainMenu extends Component {
     this.display = this.localConfig.get('display');
     this.reloadTime = this.localConfig.get('reloadTime');
     this.textFilter = this.localConfig.get('textFilter');
-    console.log("GOT USER");
     this.user = this.localConfig.get('user');
     this.componentConfig.update('display', this.display);
     this.componentConfig.update('reloadTime', this.reloadTime);
@@ -87,7 +86,7 @@ export default class MainMenu extends Component {
   }
 
   @action
-  ChangePassword() {
-
+  Settings() {
+    this.router.transitionTo('settings');
   }
 }
