@@ -20,6 +20,20 @@ export default class ApiService extends Service {
     return response;
   }
 
+  async Register(email, password) {
+    let reqHeaders = new Headers();
+    reqHeaders.set('Content-Type', 'application/json');
+    let response = await fetch('http://localhost:8010/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+      headers: reqHeaders,
+    });
+    return response;
+  }
+
   LogOut() {
     this.localConfig.set('user', '');
     this.localConfig.set('token', '');

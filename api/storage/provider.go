@@ -8,6 +8,7 @@ type Provider interface {
 	Free()
 
 	Login(string, string) (*types.User, error)
+	Register(string, string) (*types.User, error)
 	GetAllMonitors(int64, int64, string) ([]types.Monitor, error)
 	GetAllTargets(int64, int64, string) ([]*types.Target, error)
 	GetMonitorByID(string) (*types.Monitor, error)

@@ -35,5 +35,24 @@ export default class LoginController extends Controller {
   }
 
   @action
-  Register() {}
+  async Register(event) {
+    event.preventDefault();
+    event.target.disabled = true;
+    this.error = '';
+    try {
+      let response = await this.api.Register(this.email, this.password);
+      if (!response.ok) {
+        this.error = data.message;
+        event.target.disabled = false;
+        return;
+      }
+      let data = await response.json();
+      this.localConfig.set('user', this.email);
+      this.localConfig.set('token', data);
+      this.router.transitionTo('index');
+    } catch (error) {
+      this.error = 'Network error';
+      event.target.disabled = false;
+    }
+  }
 }

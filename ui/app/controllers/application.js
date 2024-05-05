@@ -16,6 +16,6 @@ export default class ApplicationController extends Controller {
   }
 
   get Show() {
-    return this.router.currentRouteName != 'login' ? '' : 'd-none';
+    return this.router.currentRouteName != 'login';
   }
 }

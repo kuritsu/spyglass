@@ -48,6 +48,7 @@ func (api *API) Serve() *gin.Engine {
 	r.POST("/targets", authMid, targets.Post)
 	r.PUT("/target", authMid, targets.Put)
 	r.POST("/login", users.Login)
+	r.POST("/register", users.Register)
 
 	return r
 }

@@ -58,3 +58,39 @@ func (t *UserController) Login(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, token)
 }
+
+func (t *UserController) Register(c *gin.Context) {
+	var creds types.AuthRequest
+	if er := c.ShouldBind(&creds); er != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": er.Error(),
+		})
+		return
+	}
+	t.db.Init()
+	defer t.db.Free()
+	user, err := t.db.Register(creds.Email, creds.Password)
+	if err != nil {
+		t.log.Error(err)
+		if err.Error() == "ErrorCreatingUser" {
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Error creating user.",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	t.log.Info("User ", creds.Email, " created.")
+	token, err := t.db.CreateUserToken(user)
+	if err != nil {
+		t.log.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, token)
+}

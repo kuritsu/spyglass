@@ -397,6 +397,30 @@ func (p *MongoDB) Login(email string, password string) (*types.User, error) {
 	return &user, nil
 }
 
+func (p *MongoDB) Register(email string, password string) (*types.User, error) {
+	epwd, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
+	user := types.User{
+		Email:     email,
+		FullName:  email,
+		Roles:     []string{email},
+		PassHash:  string(epwd),
+		FirstHash: string(epwd),
+		Permissions: types.Permissions{
+			Owners:    []string{email},
+			Readers:   []string{email},
+			Writers:   []string{email},
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
+	_, err := p.client.Database("spyglass").Collection("Users").InsertOne(p.context, user)
+	if err != nil {
+		p.Log.Error(err)
+		return nil, fmt.Errorf("ErrorCreatingUser")
+	}
+	return &user, nil
+}
+
 func (p *MongoDB) CreateUserToken(user *types.User) (string, error) {
 	tokenUuid := uuid.NewString()
 	token := types.UserToken{
