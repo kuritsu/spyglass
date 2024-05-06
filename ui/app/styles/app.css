@@ -14,9 +14,10 @@
 }
 
 .treeViewItem {
-  padding: 5px;
+  padding: 5px !important;
   display: inline;
-  margin: 1px;
+  margin: 2px !important;
+  text-align: center;
 }
 
 .treeViewItem > a {
@@ -27,8 +28,9 @@
 }
 
 .treeViewChildren {
-  margin-left: 10px;
+  margin-left: 1px;
   padding: 5px;
+  line-height: 2;
 }
 
 .treeViewRoot {

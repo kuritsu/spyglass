@@ -35,6 +35,7 @@ type MongoDB struct {
 
 // Init the db
 func (p *MongoDB) Init() {
+	p.Log.Debug("MongoDB.Init")
 	connectionString := os.Getenv("MONGODB_CONNECTIONSTRING")
 	if connectionString == "" {
 		p.Log.Fatal("ERROR: No MongoDB connection string provided. (MONGODB_CONNECTIONSTRING)")
@@ -163,6 +164,7 @@ func (p *MongoDB) createIndexes() {
 
 // Free db connection
 func (p *MongoDB) Free() {
+	p.Log.Debug("MongoDB.Free")
 	p.cancelFunc()
 	p.client.Disconnect(p.context)
 }
@@ -501,7 +503,7 @@ func (p *MongoDB) UpdateUser(user *types.User, oldPassword, newPassword string) 
 
 func updateChildrenRefs(t *types.Target, result []types.TargetRef) []types.TargetRef {
 	if t.Children == nil || len(t.Children) == 0 {
-		return []types.TargetRef{}
+		return result
 	}
 	var childrenRef []string = make([]string, len(t.Children))
 	result = append(result, t.Children...)

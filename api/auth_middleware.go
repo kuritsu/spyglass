@@ -9,46 +9,40 @@ import (
 	logr "github.com/sirupsen/logrus"
 )
 
+func abortWithMessage(c *gin.Context, msg string, db storage.Provider) {
+	if db != nil {
+		db.Free()
+	}
+	c.JSON(http.StatusForbidden, gin.H{
+		"message": msg,
+	})
+	c.Abort()
+}
+
 func AuthMiddleware(db storage.Provider, log *logr.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := c.Request.Header.Get("Authorization")
-		if h == "" {
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": "Unauthorized",
-			})
-			c.Abort()
-			return
-		}
 		before, after, found := strings.Cut(h, ":")
-		if !found {
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": "Unauthorized",
-			})
-			c.Abort()
+		if h == "" || !found {
+			abortWithMessage(c, "Unauthorized", nil)
 			return
 		}
-		db.Init()
-		defer db.Free()
 		log.Debug("Searching for user ", before)
+		db.Init()
 		user, err := db.GetUser(before)
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": "Invalid user",
-			})
-			c.Abort()
+			abortWithMessage(c, "Invalid user", db)
 			return
 		}
 		c.Set("user", user)
 		log.Debug("Validating token for ", before)
 		err = db.ValidateToken(before, after)
 		log.Debug("Finished validation.")
+		db.Free()
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": "Unauthorized",
-			})
-			c.Abort()
+			abortWithMessage(c, "Unauthorized", nil)
 			return
 		}
 		c.Next()

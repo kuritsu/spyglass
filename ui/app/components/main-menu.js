@@ -35,6 +35,7 @@ export default class MainMenu extends Component {
   updateDisplay(displayParam) {
     this.display = displayParam;
     this.componentConfig.update('display', displayParam);
+    this.localConfig.set('display', displayParam);
   }
 
   get ReloadTime() {

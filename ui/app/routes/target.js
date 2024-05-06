@@ -24,6 +24,14 @@ export default class TargetRoute extends Route {
         this.componentConfig.update('fetchError', data.message);
         return null;
       }
+      //TODO: Retrieve parent info from api
+      let sepIndex = params.id.lastIndexOf('/')
+      if (sepIndex > -1) {
+        data.parent = {
+          "id": params.id.substring(0, sepIndex),
+          "status": 0,
+        }
+      }
       return data;
     } catch (err) {
       this.componentConfig.update(

@@ -11,6 +11,9 @@
     <div style="margin-top: 5px;"></div>
     {{/if}}
     <TreeItem @target={{ @target }} />
+    {{#if @target.parent}}
+    &nbsp;<TreeItem @target={{ @target.parent }} />
+    {{/if}}
 </div>
 {{#if @target.children}}
 <div class="treeViewChildren">

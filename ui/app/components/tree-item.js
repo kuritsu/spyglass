@@ -60,7 +60,7 @@ export default class TreeItem extends Component {
       case 'Status':
         return this.args.target.status;
       default:
-        return ' ';
+        return '.';
     }
   }
 }
