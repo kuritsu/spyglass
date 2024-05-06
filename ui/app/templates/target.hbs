@@ -1,5 +1,7 @@
 {{page-title "Target"}}
+{{#if @model}}
 <TreeView @target={{@model}} @showDetails={{true}} />
+{{/if}}
 
 {{#if this.error}}
 <div class="alert alert-danger" role="alert">

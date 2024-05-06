@@ -62,6 +62,23 @@ func (t *TargetController) Get(c *gin.Context) {
 		})
 		return
 	}
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	if target.Readers != nil && len(target.Readers) > 1 && !CommonElems(target.Readers, user.Roles) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Target not found.",
+		})
+	}
+	if target.Children != nil {
+		tempChildren := make([]types.TargetRef, 0, len(target.Children))
+		for _, c := range target.Children {
+			if c.Readers != nil && len(c.Readers) > 1 && !CommonElems(c.Readers, user.Roles) {
+				continue
+			}
+			tempChildren = append(tempChildren, c)
+		}
+		target.Children = tempChildren
+	}
 	c.JSON(http.StatusOK, target)
 }
 
@@ -100,7 +117,16 @@ func (t *TargetController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, []*types.Target(targets))
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	result := make([]*types.Target, 0, len(targets))
+	for _, t := range targets {
+		if t.Readers != nil && len(t.Readers) > 0 && !CommonElems(t.Readers, user.Roles) {
+			continue
+		}
+		result = append(result, t)
+	}
+	c.JSON(http.StatusOK, []*types.Target(result))
 }
 
 // Post a new target
@@ -137,8 +163,7 @@ func (t *TargetController) Post(c *gin.Context) {
 	_, err := t.db.InsertTarget(&target)
 	if err != nil {
 		t.log.Error(err)
-		if strings.Contains(err.Error(), "duplicate") ||
-			strings.Contains(err.Error(), "Duplicate") {
+		if strings.Contains(strings.ToLower(err.Error()), "duplicate") {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Duplicate target ID.",
 			})

@@ -3,6 +3,7 @@ import { service } from '@ember/service';
 
 export default class TargetRoute extends Route {
   @service api;
+  @service componentConfig;
 
   queryParams = {
     id: {
@@ -21,7 +22,7 @@ export default class TargetRoute extends Route {
       }
       if (!response.ok) {
         this.componentConfig.update('fetchError', data.message);
-        return [];
+        return null;
       }
       return data;
     } catch (err) {
@@ -29,7 +30,7 @@ export default class TargetRoute extends Route {
         'fetchError',
         err instanceof TypeError ? 'Network error.' : err,
       );
-      return [];
+      return null;
     }
   }
 }
