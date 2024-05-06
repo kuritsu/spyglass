@@ -46,7 +46,7 @@ func (c *APIClient) ListTargets(filter string, pageIndex int, pageSize int) ([]*
 	c.log.Debugf("Getting targets %v, pageIndex %v, pageSize %v", filter, pageIndex, pageSize)
 	req, _ := http.NewRequest("GET", fmt.Sprintf("%s/targets?contains=%s&pageIndex=%v&pageSize=%v",
 		c.url, filter, pageIndex, pageSize), http.NoBody)
-	req.Header.Add("Authorization", c.token)
+	c.addAuthHeader(req)
 	response, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (c *APIClient) InsertOrUpdateMonitor(monitor *types.Monitor) error {
 	var request *http.Request
 	c.log.Debug("Getting monitor ", monitor.ID)
 	request, _ = http.NewRequest("GET", fmt.Sprintf("%s/monitors/%s", c.url, monitor.ID), http.NoBody)
-	request.Header.Add("Authorization", c.token)
+	c.addAuthHeader(request)
 	response, err := c.client.Do(request)
 	if err != nil {
 		return err
@@ -85,8 +85,7 @@ func (c *APIClient) InsertOrUpdateMonitor(monitor *types.Monitor) error {
 		c.log.Debug("Putting monitor ", monitor.ID)
 		request, _ = http.NewRequest("PUT", fmt.Sprintf("%s/monitors/%s", c.url, monitor.ID), reader)
 	}
-	request.Header["Content-Type"] = []string{"application/json"}
-	request.Header.Add("Authorization", c.token)
+	c.addAuthHeader(request)
 	response, err = c.client.Do(request)
 	if err != nil {
 		return err
@@ -103,7 +102,7 @@ func (c *APIClient) InsertOrUpdateTarget(target *types.Target, forceStatusUpdate
 	c.log.Debug("Getting target ", target.ID)
 	var request *http.Request
 	request, _ = http.NewRequest("GET", fmt.Sprintf("%s/targets/%s", c.url, target.ID), http.NoBody)
-	request.Header.Add("Authorization", c.token)
+	c.addAuthHeader(request)
 	response, err := c.client.Do(request)
 	if err != nil {
 		return err
@@ -120,8 +119,7 @@ func (c *APIClient) InsertOrUpdateTarget(target *types.Target, forceStatusUpdate
 		request, _ = http.NewRequest(http.MethodPut,
 			fmt.Sprintf("%s/targets/%s?forceStatusUpdate=%v", c.url, target.ID, forceStatusUpdate), reader)
 	}
-	request.Header["Content-Type"] = []string{"application/json"}
-	request.Header.Add("Authorization", c.token)
+	c.addAuthHeader(request)
 	response, err = c.client.Do(request)
 	if err != nil {
 		return err
@@ -146,8 +144,7 @@ func (c *APIClient) UpdateTargetStatus(id string, status int, statusDescription 
 	c.log.Debug("Patching target ", id)
 	request, _ := http.NewRequest(http.MethodPatch,
 		fmt.Sprintf("%s/target?id=%s", c.url, id), reader)
-	request.Header["Content-Type"] = []string{"application/json"}
-	request.Header.Add("Authorization", c.token)
+	c.addAuthHeader(request)
 	response, err := c.client.Do(request)
 	if err != nil {
 		return err
@@ -165,8 +162,7 @@ func (c *APIClient) GetTargetByID(id string, includeChildren bool) (types.Target
 	c.log.Debug("Getting target ", id)
 	request, _ := http.NewRequest(http.MethodGet,
 		fmt.Sprintf("%s/target?id=%s&includeChildren=%v", c.url, url.QueryEscape(id), includeChildren), http.NoBody)
-	request.Header["Content-Type"] = []string{"application/json"}
-	request.Header.Add("Authorization", c.token)
+	c.addAuthHeader(request)
 	response, err := c.client.Do(request)
 	if err != nil {
 		return nil, err
@@ -186,13 +182,6 @@ func (c *APIClient) GetTargetByID(id string, includeChildren bool) (types.Target
 	}
 	c.log.Debug("Get target successfully.")
 	return result, nil
-}
-
-func (c *APIClient) errorWithMessage(response *http.Response) error {
-	responseBytes, _ := io.ReadAll(response.Body)
-	errorMsg := make(map[string]string)
-	json.Unmarshal(responseBytes, &errorMsg)
-	return errors.New(errorMsg["message"])
 }
 
 func (c *APIClient) Login(email string, password string) (string, error) {
@@ -223,4 +212,34 @@ func (c *APIClient) Login(email string, password string) (string, error) {
 	}
 	c.log.Debug("Auth success.")
 	return result, nil
+}
+
+func (c *APIClient) InsertRole(role *types.Role) error {
+	c.log.Debug("Add role ", role.Name)
+	bodyBytes, _ := json.Marshal(role)
+	reader := strings.NewReader(string(bodyBytes))
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/roles", c.url), reader)
+	c.addAuthHeader(request)
+	response, err := c.client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return c.errorWithMessage(response)
+	}
+	c.log.Debug("Add role success.")
+	return nil
+}
+
+func (c *APIClient) errorWithMessage(response *http.Response) error {
+	responseBytes, _ := io.ReadAll(response.Body)
+	errorMsg := make(map[string]string)
+	json.Unmarshal(responseBytes, &errorMsg)
+	return errors.New(errorMsg["message"])
+}
+
+func (c *APIClient) addAuthHeader(request *http.Request) {
+	request.Header["Content-Type"] = []string{"application/json"}
+	request.Header.Add("Authorization", c.token)
 }

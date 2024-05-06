@@ -31,6 +31,7 @@ var logLevelNames = map[string]logr.Level{
 // CommandList list of commands.
 var CommandList = map[string]commands.Command{
 	"login":  commands.LoginFlags(),
+	"role":   commands.RoleFlags(),
 	"server": commands.ServerFlags(),
 	"target": commands.TargetFlags(),
 	"ui":     commands.UIOptionsFlags(),

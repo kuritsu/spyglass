@@ -32,9 +32,11 @@ func (api *API) Serve() *gin.Engine {
 	monitors := MonitorController{}
 	targets := TargetController{}
 	users := UserController{}
+	roles := RoleController{}
 	monitors.Init(api.db, api.log)
 	targets.Init(api.db, api.log)
 	users.Init(api.db, api.log)
+	roles.Init(api.db, api.log)
 
 	authMid := AuthMiddleware(api.db, api.log)
 
@@ -48,8 +50,9 @@ func (api *API) Serve() *gin.Engine {
 	r.POST("/targets", authMid, targets.Post)
 	r.PUT("/target", authMid, targets.Put)
 	r.POST("/user/login", users.Login)
-	r.POST("/user/register", users.Register)
+	r.POST("/users", users.Register)
 	r.PATCH("/user/:id", authMid, users.Update)
+	r.POST("/roles", authMid, roles.Add)
 
 	return r
 }

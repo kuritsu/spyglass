@@ -22,4 +22,5 @@ type Provider interface {
 	ValidateToken(string, string) error
 	GetUser(string) (*types.User, error)
 	UpdateUser(*types.User, string, string) error
+	InsertRole(*types.Role, *types.User) error
 }

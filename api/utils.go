@@ -1,5 +1,13 @@
 package api
 
+import (
+	"encoding/json"
+	"os"
+	"strings"
+
+	"gopkg.in/yaml.v2"
+)
+
 func CommonElems(first, second []string) bool {
 	set := make(map[string]bool)
 	for _, e := range first {
@@ -12,4 +20,27 @@ func CommonElems(first, second []string) bool {
 		}
 	}
 	return false
+}
+
+func NewObjectFromFile[T any](fileName string) (*T, error) {
+	lowerFileName := strings.ToLower(fileName)
+	var result T
+	var unmarshalFunc func(in []byte, out any) (err error)
+	switch {
+	case strings.HasSuffix(lowerFileName, ".json"):
+		unmarshalFunc = json.Unmarshal
+	case strings.HasSuffix(lowerFileName, ".yaml") || strings.HasSuffix(lowerFileName, ".yml"):
+		unmarshalFunc = yaml.Unmarshal
+	default:
+		return &result, os.ErrInvalid
+	}
+	raw, err := os.ReadFile(fileName)
+	if err != nil {
+		return &result, err
+	}
+	err = unmarshalFunc(raw, &result)
+	if err != nil {
+		return &result, err
+	}
+	return &result, nil
 }

@@ -23,7 +23,7 @@ export default class ApiService extends Service {
   async Register(email, password) {
     let reqHeaders = new Headers();
     reqHeaders.set('Content-Type', 'application/json');
-    let response = await fetch('http://localhost:8010/user/register', {
+    let response = await fetch('http://localhost:8010/users', {
       method: 'POST',
       body: JSON.stringify({
         email: email,

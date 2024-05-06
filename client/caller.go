@@ -11,4 +11,5 @@ type APICaller interface {
 	InsertOrUpdateMonitor(*types.Monitor) error
 	InsertOrUpdateTarget(target *types.Target, forceStatusUpdate bool) error
 	UpdateTargetStatus(string, int, string) error
+	InsertRole(*types.Role) error
 }

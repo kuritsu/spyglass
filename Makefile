@@ -1,4 +1,7 @@
 SHELL := /bin/bash
+.DEFAULT_GOAL := build
+
+.PHONY: api build mod test db ui
 
 build:
 	go vet github.com/kuritsu/spyglass
@@ -19,13 +22,11 @@ db-clean:
 	docker-compose down
 	rm -rf data
 
-.PHONY: api
 api: build
 	bash ./scripts/api.sh
 
 ui-build:
 	cd ui; ember build --environment=production
 
-.PHONY: ui
 ui:
 	./spyglass ui
