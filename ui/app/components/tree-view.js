@@ -12,23 +12,21 @@ export default class TreeView extends Component {
     constructor() {
         super(...arguments);
         this.filteredChildren = this.args.target.children;
-        this.childrenVisibleCount = this.filteredChildren.length;
+        this.childrenVisibleCount = this.filteredChildren ? this.filteredChildren.length : 0;
         this.componentConfig.subscribe(this.onPropChange);
     }
 
     @action
     onPropChange(prop, value) {
-        if (prop != 'textFilter')
+        if (prop != 'textFilter' || !this.args.target.children)
             return;
-        if (this.args.target.children) {
-            let selected = [];
-            this.args.target.children.forEach(e => {
-                if (JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) != -1)
-                    selected.push(e);
-            });
-            this.filteredChildren = selected;
-            this.childrenVisibleCount = this.filteredChildren.length;
-        }
+        let selected = [];
+        this.args.target.children.forEach(e => {
+            if (JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) != -1)
+                selected.push(e);
+        });
+        this.filteredChildren = selected;
+        this.childrenVisibleCount = this.filteredChildren.length;
     }
 
     @action
