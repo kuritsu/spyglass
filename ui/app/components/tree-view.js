@@ -12,6 +12,7 @@ export default class TreeView extends Component {
     constructor() {
         super(...arguments);
         this.filteredChildren = this.args.target.children;
+        this.childrenVisibleCount = this.filteredChildren.length;
         this.componentConfig.subscribe(this.onPropChange);
     }
 
