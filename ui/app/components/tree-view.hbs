@@ -33,12 +33,12 @@
     &nbsp;<TreeItem @target={{ @target.parent }} />
     {{/if}}
     {{#if @target.children}}
-    <label style="font-size: small;">({{@target.children.length}} child targets)</label>
+    <label style="font-size: small;">({{@target.children.length}} child targets, {{this.childrenVisibleCount}} visible)</label>
     {{/if}}
 </div>
 {{#if @target.children}}
 <div class="treeViewChildren">
-    {{#each @target.children as |child|}}
+    {{#each this.filteredChildren as |child|}}
     <TreeItem @target={{ child }} @parent={{@target.id}} />
     {{/each}}
 </div>

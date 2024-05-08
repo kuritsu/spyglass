@@ -20,14 +20,6 @@ export default class TreeItem extends Component {
     if (prop == 'display') {
       this.display = value;
     }
-    if (prop == 'textFilter') {
-      this.show =
-        JSON.stringify(this.args.target)
-          .toLowerCase()
-          .indexOf(value.toLowerCase()) != -1
-          ? ''
-          : 'd-none';
-    }
   }
 
   get Style() {
