@@ -16,6 +16,7 @@ export default class MainMenu extends Component {
   @service router;
   @service api;
   @storageFor('config') localConfig;
+  timeOut = null;
 
   @action
   init() {
@@ -53,8 +54,9 @@ export default class MainMenu extends Component {
   updateReload(reloadParam) {
     this.reloadTime = reloadParam * 1000;
     this.timeToRefresh = 0;
+    clearTimeout(this.timeOut);
     if (this.reloadTime > 0) {
-      setTimeout(this.makeProgress, 1000);
+      this.timeOut = setTimeout(this.makeProgress, 1000);
     }
     this.localConfig.set('reloadTime', this.reloadTime);
   }
@@ -66,7 +68,7 @@ export default class MainMenu extends Component {
       this.router.refresh(this.router.currentRouteName);
       this.timeToRefresh = 0;
     }
-    setTimeout(this.makeProgress, 1000);
+    this.timeOut = setTimeout(this.makeProgress, 1000);
   }
 
   @action

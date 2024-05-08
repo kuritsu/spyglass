@@ -28,9 +28,6 @@
             <dd.button>Refresh: {{this.ReloadTime}} <span class="caret"></span></dd.button>
             <dd.menu as |ddm|>
                 <ddm.item>
-                <ddm.linkTo {{on "click" (fn this.updateReload 5)}}>Every 5s</ddm.linkTo>
-                </ddm.item>
-                <ddm.item>
                 <ddm.linkTo {{on "click" (fn this.updateReload 10)}}>Every 10s</ddm.linkTo>
                 </ddm.item>
                 <ddm.item>

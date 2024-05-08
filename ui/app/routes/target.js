@@ -13,6 +13,7 @@ export default class TargetRoute extends Route {
 
   async model(params) {
     try {
+      this.componentConfig.update('fetchError', '');
       let response = await this.api.GetTarget(params.id);
       let data = await response.json();
       if (response.status == 403) {
