@@ -23,22 +23,23 @@ export default class TreeItem extends Component {
   }
 
   get Style() {
+    let append = (this.display == 'Status') ? "statusItem" : "";
     if (this.args.target.children) {
       for (let i = 0; i < this.args.target.children.Length; i++) {
         if (
           this.args.target.children[i].critical &&
           this.args.target.children[i].status != 100
         ) {
-          return 'treeViewRed';
+          return `treeViewRed ${append}`;
         }
       }
     }
     if (this.args.target.status == 0) {
-      return 'treeViewRed';
+      return `treeViewRed ${append}`;
     } else if (this.args.target.status == 100) {
-      return 'treeViewGreen';
+      return `treeViewGreen ${append}`;
     }
-    return 'treeViewYellow';
+    return `treeViewYellow ${append}`;
   }
 
   get Value() {

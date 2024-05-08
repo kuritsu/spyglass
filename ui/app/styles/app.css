@@ -15,7 +15,7 @@
 
 .treeViewItem {
   padding: 5px !important;
-  display: inline;
+  display: inline-block;
   margin: 2px !important;
   text-align: center;
 }
@@ -57,3 +57,7 @@
 .alert {
   margin: 5px !important;
 }
+
+.statusItem {
+  width: 35px !important;
+} 
