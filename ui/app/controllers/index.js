@@ -5,6 +5,7 @@ import { tracked } from '@glimmer/tracking';
 
 export default class IndexController extends Controller {
   @tracked error;
+  @tracked filteredTargets = null;
   @service componentConfig;
 
   init(params) {
@@ -14,9 +15,19 @@ export default class IndexController extends Controller {
 
   @action
   onConfigChange(prop, value) {
-    if (prop != 'fetchError') {
+    if (prop == 'fetchError') {
+      this.error = value;
       return;
     }
-    this.error = value;
+    if (prop == 'textFilter') {
+        if (!this.model)
+          return;
+        let selected = [];
+        this.model.forEach(e => {
+            if (JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) != -1)
+                selected.push(e);
+        });
+        this.filteredTargets = selected;
+    }
   }
 }

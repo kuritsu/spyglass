@@ -1,8 +1,8 @@
 /* Ember supports plain CSS out of the box. More info: https://cli.emberjs.com/release/advanced-use/stylesheets/ */
 
-/* * {
-  color: black;
-} */
+body {
+  background-color: #fff1e6;
+}
 
 .navbar {
   background-color: #fecba1 !important;

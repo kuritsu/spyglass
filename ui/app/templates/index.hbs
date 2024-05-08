@@ -1,5 +1,5 @@
 {{page-title "Spyglass"}}
-{{#each @model as |item|}}
+{{#each this.filteredTargets as |item|}}
 <TreeView @target={{item}} @display={{this.display}} />
 {{/each}}
 
