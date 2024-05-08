@@ -1,11 +1,7 @@
 package types
 
 import (
-	"encoding/json"
-	"os"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 // MonitorRef is a reference to an existing monitor
@@ -74,27 +70,4 @@ func (s TargetList) Swap(i, j int) {
 
 func (s TargetList) Less(i, j int) bool {
 	return strings.ToLower(s[i].ID) < strings.ToLower(s[j].ID)
-}
-
-func NewTargetFromFile(fileName string) (TargetRef, error) {
-	lowerFileName := strings.ToLower(fileName)
-	result := &Target{}
-	var unmarshalFunc func(in []byte, out interface{}) (err error)
-	switch {
-	case strings.HasSuffix(lowerFileName, ".json"):
-		unmarshalFunc = json.Unmarshal
-	case strings.HasSuffix(lowerFileName, ".yaml") || strings.HasSuffix(lowerFileName, ".yml"):
-		unmarshalFunc = yaml.Unmarshal
-	default:
-		return nil, os.ErrInvalid
-	}
-	raw, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-	err = unmarshalFunc(raw, result)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
 }

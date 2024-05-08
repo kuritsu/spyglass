@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/kuritsu/spyglass/api"
 	"github.com/kuritsu/spyglass/api/types"
 	"github.com/kuritsu/spyglass/cli/runner"
 )
@@ -45,7 +46,7 @@ func TargetAddActionFlags(parentFs *flag.FlagSet) *TargetAddAction {
 func (o *TargetAddAction) Apply(c *CommandLineContext) runner.Runner {
 	o.c = c
 	c.Log.Debug("Apply target add...")
-	target, err := types.NewTargetFromFile(o.fileName)
+	target, err := api.NewObjectFromFile[types.Target](o.fileName)
 	if err != nil {
 		return &runner.ExitError{Error: err, Logger: c.Log}
 	}

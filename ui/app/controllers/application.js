@@ -16,10 +16,7 @@ export default class ApplicationController extends Controller {
   }
 
   get Show() {
-    const noMenuRoutes = [
-      "login",
-      "settings"
-    ]
-    return  noMenuRoutes.indexOf(this.router.currentRouteName) == -1;
+    const noMenuRoutes = ['login', 'settings'];
+    return noMenuRoutes.indexOf(this.router.currentRouteName) == -1;
   }
 }

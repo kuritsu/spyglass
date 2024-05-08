@@ -35,7 +35,7 @@ export default class ApiService extends Service {
   }
 
   async UpdateUser(fullName, oldPassword, newPassword) {
-    let email = this.localConfig.get('user')
+    let email = this.localConfig.get('user');
     let reqHeaders = this.createHeaders();
     let response = await fetch(`http://localhost:8010/user/${email}`, {
       method: 'PATCH',

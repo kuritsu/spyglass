@@ -64,7 +64,7 @@ func (t *TargetController) Get(c *gin.Context) {
 	}
 	userValue, _ := c.Get("user")
 	user := userValue.(*types.User)
-	if target.Readers != nil && len(target.Readers) > 1 && !CommonElems(target.Readers, user.Roles) {
+	if !CheckPermissions(user, target.Readers) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Target not found.",
 		})
@@ -72,7 +72,7 @@ func (t *TargetController) Get(c *gin.Context) {
 	if target.Children != nil {
 		tempChildren := make([]types.TargetRef, 0, len(target.Children))
 		for _, c := range target.Children {
-			if c.Readers != nil && len(c.Readers) > 1 && !CommonElems(c.Readers, user.Roles) {
+			if !CheckPermissions(user, c.Readers) {
 				continue
 			}
 			tempChildren = append(tempChildren, c)
@@ -146,10 +146,19 @@ func (t *TargetController) Post(c *gin.Context) {
 	}
 	t.db.Init()
 	defer t.db.Free()
-	_, perr := t.parentMissing(target.ID)
+	parent, perr := t.parentMissing(target.ID)
 	if perr != nil {
 		c.JSON(perr.Code, gin.H{
 			"message": perr.Error(),
+		})
+		return
+	}
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	if !CheckPermissions(user, parent.Writers) {
+		t.log.Error("Forbidden target.post for ", user.Email, " in ", parent.ID)
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}
@@ -212,6 +221,15 @@ func (t *TargetController) Patch(c *gin.Context) {
 	case target == nil:
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Target not found.",
+		})
+		return
+	}
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	if !CheckPermissions(user, target.Writers) {
+		t.log.Error("Forbidden target.patch for ", user.Email, " in ", target.ID)
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}

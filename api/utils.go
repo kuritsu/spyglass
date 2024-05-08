@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"os"
+	"slices"
 	"strings"
 
+	"github.com/kuritsu/spyglass/api/types"
 	"gopkg.in/yaml.v2"
 )
 
@@ -43,4 +45,13 @@ func NewObjectFromFile[T any](fileName string) (*T, error) {
 		return &result, err
 	}
 	return &result, nil
+}
+
+func CheckPermissions(user *types.User, targetPermissions []string) bool {
+	if !slices.Contains(user.Roles, "admins") &&
+		!slices.Contains(targetPermissions, user.Email) &&
+		!CommonElems(targetPermissions, user.Roles) {
+		return false
+	}
+	return true
 }
