@@ -4,7 +4,7 @@
   <navbar.content>
     <navbar.nav as |nav|>
       <nav.item style="padding-right: 5px;">
-        <input class="form-control" type="text" placeholder="Filter by text" aria-label="filter by text" 
+        <input class="form-control dropdown-toggle" type="text" placeholder="Filter by text" aria-label="filter by text" 
           value={{this.textFilter}} {{on "keyup" this.filterByText }}>
       </nav.item>
       <nav.item>

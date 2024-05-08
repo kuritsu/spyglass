@@ -9,8 +9,15 @@
 }
 
 .dropdown-toggle {
-  background-color: white !important;
+  background-color: #ffe5d0 !important;
   color: black !important;
+  border: black solid 1px !important;
+}
+
+.dropdown-menu {
+  background-color: #ffe5d0 !important;
+  color: black !important;
+  border: black solid 1px !important;
 }
 
 .treeViewItem {
