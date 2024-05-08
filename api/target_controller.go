@@ -15,8 +15,9 @@ import (
 
 // TargetController actions
 type TargetController struct {
-	db  storage.Provider
-	log *logr.Logger
+	db               storage.Provider
+	log              *logr.Logger
+	statusUpdateChan chan string
 }
 
 // Init -ialize the controller
@@ -240,6 +241,14 @@ func (t *TargetController) Patch(c *gin.Context) {
 			"message": "Internal error. Try again.",
 		})
 		return
+	}
+	parent := newTarget.ID
+	for {
+		parent = types.GetTargetParentByID(parent)
+		if parent == "" {
+			break
+		}
+		t.statusUpdateChan <- parent
 	}
 	c.JSON(http.StatusOK, newTarget)
 }

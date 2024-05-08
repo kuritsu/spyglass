@@ -10,6 +10,7 @@ import (
 	logr "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kuritsu/spyglass/api"
 	"github.com/kuritsu/spyglass/api/storage"
 	"github.com/kuritsu/spyglass/cli"
 	"github.com/kuritsu/spyglass/cli/commands"
@@ -73,6 +74,8 @@ func main() {
 			commands.CreateContext,
 			client.Create,
 			createEmbedRes,
+			api.NewStatusUpdateJob,
+			api.Create,
 		),
 		fx.Invoke(processArgs),
 	)

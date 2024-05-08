@@ -3,7 +3,6 @@ package commands
 import (
 	"flag"
 
-	"github.com/kuritsu/spyglass/api"
 	"github.com/kuritsu/spyglass/cli/runner"
 )
 
@@ -34,8 +33,7 @@ func ServerFlags() *ServerOptions {
 // Apply the command.
 func (o *ServerOptions) Apply(c *CommandLineContext) runner.Runner {
 	c.Log.Debug("Executing server.")
-	apiObj := api.Create(c.Db, c.Log)
-	s := apiObj.Serve()
+	s := c.Api.Serve()
 	return &runner.Gin{
 		Engine:  s,
 		Address: o.Address,

@@ -9,13 +9,14 @@ import (
 
 // API is the API object
 type API struct {
-	db  storage.Provider
-	log *logr.Logger
+	db              storage.Provider
+	log             *logr.Logger
+	statusUpdateJob *StatusUpdateJob
 }
 
 // Create is the API host
-func Create(db storage.Provider, log *logr.Logger) *API {
-	result := API{db, log}
+func Create(db storage.Provider, log *logr.Logger, statusUpdateJob *StatusUpdateJob) *API {
+	result := API{db, log, statusUpdateJob}
 	return &result
 }
 
@@ -30,7 +31,9 @@ func (api *API) Serve() *gin.Engine {
 	gin.DisableConsoleColor()
 	r.Use(CORSMiddleware())
 	monitors := MonitorController{}
-	targets := TargetController{}
+	targets := TargetController{
+		statusUpdateChan: api.statusUpdateJob.StatusChan,
+	}
 	users := UserController{}
 	roles := RoleController{}
 	monitors.Init(api.db, api.log)
@@ -53,6 +56,8 @@ func (api *API) Serve() *gin.Engine {
 	r.POST("/users", users.Register)
 	r.PATCH("/user/:id", authMid, users.Update)
 	r.POST("/roles", authMid, roles.Add)
+
+	go api.statusUpdateJob.Run()
 
 	return r
 }

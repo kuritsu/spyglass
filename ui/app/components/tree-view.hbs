@@ -1,15 +1,13 @@
 <div class="treeViewRoot p-2 {{if @showDetails 'treeViewDetails'}}">
     {{#if @showDetails}}
-    <label style="font-size: large;">{{@target.description}}</label>
+    <label style="font-size: large;">{{@target.description}}
+        <a href="#" {{on 'click' this.ShowModal}}><i class="bi-lock-fill"></i></a>
+    </label>
     <br>
     <div style="font-size: small;">
-        <label>{{@target.status}}% ({{@target.statusDescription}})
-            <a href="#" {{on 'click' this.ShowModal}}><i class="bi-lock-fill"></i></a></label>
-            {{#if @target.url}}
-            <br>
-            <a href={{@target.url}}>Link</a>
-            {{/if}}
-        <br>
+        {{#if @target.url}}
+        <a href={{@target.url}}>Link</a>
+        {{/if}}
         <BsModalSimple
             @open={{this.modalOpen}}
             @title="{{this.getChildId @target.id}} permissions"
@@ -33,6 +31,9 @@
     <TreeItem @target={{ @target }} />
     {{#if @target.parent}}
     &nbsp;<TreeItem @target={{ @target.parent }} />
+    {{/if}}
+    {{#if @target.children}}
+    <label style="font-size: small;">({{@target.children.length}} child targets)</label>
     {{/if}}
 </div>
 {{#if @target.children}}
