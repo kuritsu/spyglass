@@ -181,6 +181,13 @@ func (t *TargetController) Post(c *gin.Context) {
 	target.Owners = EnsurePermissions(target.Owners, user.Email)
 	target.Readers = EnsurePermissions(target.Readers, user.Email)
 	target.Writers = EnsurePermissions(target.Writers, user.Email)
+	if len(target.Children) > 0 {
+		for _, c := range target.Children {
+			c.Owners = EnsurePermissions(c.Owners, user.Email)
+			c.Readers = EnsurePermissions(c.Readers, user.Email)
+			c.Writers = EnsurePermissions(c.Writers, user.Email)
+		}
+	}
 	_, err := t.db.InsertTarget(&target)
 	if err != nil {
 		t.log.Error(err)
