@@ -28,7 +28,7 @@
     </div>
     <div style="margin-top: 5px;"></div>
     {{/if}}
-    <TreeItem @target={{ @target }} />
+    <TreeItem @target={{ @target }} @parent={{ @target.parent.id }} />
     {{#if @target.description}}
     {{#unless @showDetails}}
     <br>
@@ -36,7 +36,7 @@
     {{/unless}}
     {{/if}}
     {{#if @target.parent}}
-    &nbsp;<TreeItem @target={{ @target.parent }} />
+    <TreeItem @target={{ @target.parent }} />
     {{/if}}
     {{#if @target.children}}
     <label style="font-size: small;">({{@target.children.length}} child targets, {{this.childrenVisibleCount}} visible)</label>
@@ -44,8 +44,10 @@
 </div>
 {{#if @target.children}}
 <div class="treeViewChildren">
-    {{#each this.filteredChildren as |child|}}
-    <TreeItem @target={{ child }} @parent={{@target.id}} />
-    {{/each}}
+    <FilteredTreeItems @items={{@target.children}} @query={{this.textFilter}} as |results|>
+        {{#each results as |child|}}
+        <TreeItem @target={{ child }} @parent={{@target.id}} />
+        {{/each}}
+    </FilteredTreeItems>
 </div>
 {{/if}}

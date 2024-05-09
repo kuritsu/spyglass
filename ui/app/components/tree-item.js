@@ -23,7 +23,7 @@ export default class TreeItem extends Component {
   }
 
   get Style() {
-    let append = (this.display == 'Status') ? "statusItem" : "";
+    let append = this.display == 'Status' ? 'statusItem' : '';
     if (this.args.target.children) {
       for (let i = 0; i < this.args.target.children.Length; i++) {
         if (

@@ -20,14 +20,13 @@ export default class IndexController extends Controller {
       return;
     }
     if (prop == 'textFilter') {
-        if (!this.model)
-          return;
-        let selected = [];
-        this.model.forEach(e => {
-            if (JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) != -1)
-                selected.push(e);
-        });
-        this.filteredTargets = selected;
+      if (!this.model) return;
+      let selected = [];
+      this.model.forEach((e) => {
+        if (JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) != -1)
+          selected.push(e);
+      });
+      this.filteredTargets = selected;
     }
   }
 }

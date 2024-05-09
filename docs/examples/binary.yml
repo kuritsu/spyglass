@@ -1,0 +1,85 @@
+id: binary_tree
+description: Binary tree
+status: 0
+statusDescription: No progress
+children:
+- id: left
+  description: Left node
+  status: 0
+  statusDescription: No progress
+  children:
+  - id: left
+    description: Left node
+    status: 0
+    statusDescription: No progress
+    children:
+    - id: left
+      description: Left node
+      status: 0
+      statusDescription: No progress
+      children:
+      - id: left
+        description: Left node
+        status: 0
+        statusDescription: No progress
+      - id: right
+        description: Right node
+        status: 0
+        statusDescription: No progress
+    - id: right
+      description: Right node
+      status: 0
+      statusDescription: No progress
+      children:
+      - id: left
+        description: Left node
+        status: 0
+        statusDescription: No progress
+      - id: right
+        description: Right node
+        status: 0
+        statusDescription: No progress
+  - id: right
+    description: Right node
+    status: 0
+    statusDescription: No progress
+    children:
+      - id: left
+        description: Left node
+        status: 0
+        statusDescription: No progress
+      - id: right
+        description: Right node
+        status: 0
+        statusDescription: No progress
+- id: right
+  description: Right node
+  status: 0
+  statusDescription: No progress
+  children:
+    - id: left
+      description: Left node
+      status: 0
+      statusDescription: No progress
+      children:
+      - id: left
+        description: Left node
+        status: 0
+        statusDescription: No progress
+      - id: right
+        description: Right node
+        status: 0
+        statusDescription: No progress
+    - id: right
+      description: Right node
+      status: 0
+      statusDescription: No progress
+      children:
+        - id: left
+          description: Left node
+          status: 0
+          statusDescription: No progress
+        - id: right
+          description: Right node
+          status: 0
+          statusDescription: No progress

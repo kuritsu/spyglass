@@ -289,9 +289,7 @@ func (p *MongoDB) InsertMonitor(monitor *types.Monitor) (*types.Monitor, error) 
 func (p *MongoDB) InsertTarget(target *types.Target) (*types.Target, error) {
 	target.ID = strings.ToLower(target.ID)
 	col := p.client.Database("spyglass").Collection("Targets")
-	allTargets := make([]types.TargetRef, 0, 8)
-	allTargets = append(allTargets, target)
-	allTargets = updateChildrenRefs(target, allTargets)
+	allTargets := updateChildrenRefs(target)
 	p.Log.Debug("Found ", len(allTargets), " targets.")
 	allObjects := make([]interface{}, len(allTargets))
 	for i := range allTargets {
@@ -513,18 +511,18 @@ func (p *MongoDB) InsertRole(role *types.Role, user *types.User) error {
 	return nil
 }
 
-func updateChildrenRefs(t *types.Target, result []types.TargetRef) []types.TargetRef {
-	if t.Children == nil || len(t.Children) == 0 {
+func updateChildrenRefs(t *types.Target) []types.TargetRef {
+	result := []types.TargetRef{t}
+	if len(t.Children) == 0 {
 		return result
 	}
 	var childrenRef []string = make([]string, len(t.Children))
-	result = append(result, t.Children...)
 	totalProgress := 0
 	for i, c := range t.Children {
 		c.ID = fmt.Sprintf("%s/%s", t.ID, strings.ToLower(c.ID))
 		totalProgress += c.Status
 		childrenRef[i] = types.GetShortID(c.ID)
-		updateChildrenRefs(c, result)
+		result = append(result, updateChildrenRefs(c)...)
 	}
 	t.Status = int(float64(100*totalProgress) / float64(100*len(t.Children)))
 	t.ChildrenRef = childrenRef
