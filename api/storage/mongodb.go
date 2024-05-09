@@ -504,9 +504,6 @@ func (p *MongoDB) UpdateUser(user *types.User, oldPassword, newPassword string) 
 func (p *MongoDB) InsertRole(role *types.Role, user *types.User) error {
 	role.CreatedAt = time.Now()
 	role.UpdatedAt = time.Now()
-	role.Owners = ensurePermissions(role.Owners, user.Email)
-	role.Readers = ensurePermissions(role.Readers, user.Email)
-	role.Writers = ensurePermissions(role.Writers, user.Email)
 
 	_, err := p.client.Database("spyglass").Collection("Roles").InsertOne(p.context, role)
 	if err != nil {
@@ -514,13 +511,6 @@ func (p *MongoDB) InsertRole(role *types.Role, user *types.User) error {
 		return fmt.Errorf("Error creating role")
 	}
 	return nil
-}
-
-func ensurePermissions(perms []string, user string) []string {
-	if len(perms) == 0 {
-		return []string{user}
-	}
-	return perms
 }
 
 func updateChildrenRefs(t *types.Target, result []types.TargetRef) []types.TargetRef {

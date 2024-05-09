@@ -12,7 +12,7 @@ func init() {
 
 // IsValidID determines if an ID is valid
 func IsValidID(id string) bool {
-	return idRegexp.MatchString(id)
+	return idRegexp.MatchString(id) && len(id) <= 1000
 }
 
 // IsValidIDFragment determines if a string is a valid ID fragment

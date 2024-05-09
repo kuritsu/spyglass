@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -122,7 +123,7 @@ func (t *TargetController) GetAll(c *gin.Context) {
 	user := userValue.(*types.User)
 	result := make([]*types.Target, 0, len(targets))
 	for _, t := range targets {
-		if t.Readers != nil && len(t.Readers) > 0 && !CommonElems(t.Readers, user.Roles) {
+		if !CheckPermissions(user, t.Readers) {
 			continue
 		}
 		result = append(result, t)
@@ -156,7 +157,14 @@ func (t *TargetController) Post(c *gin.Context) {
 	}
 	userValue, _ := c.Get("user")
 	user := userValue.(*types.User)
-	if !CheckPermissions(user, parent.Writers) {
+	if parent == nil && !slices.Contains(user.Roles, "admins") {
+		t.log.Error("Only admins can create root targets.")
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Only admins can create root targets.",
+		})
+		return
+	}
+	if parent != nil && !CheckPermissions(user, parent.Writers) {
 		t.log.Error("Forbidden target.post for ", user.Email, " in ", parent.ID)
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Access denied.",
@@ -170,6 +178,9 @@ func (t *TargetController) Post(c *gin.Context) {
 		return
 	}
 	t.log.Debug("Inserting in DB...")
+	target.Owners = EnsurePermissions(target.Owners, user.Email)
+	target.Readers = EnsurePermissions(target.Readers, user.Email)
+	target.Writers = EnsurePermissions(target.Writers, user.Email)
 	_, err := t.db.InsertTarget(&target)
 	if err != nil {
 		t.log.Error(err)
@@ -289,6 +300,15 @@ func (t *TargetController) Put(c *gin.Context) {
 	case target == nil:
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Target not found.",
+		})
+		return
+	}
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	if !CheckPermissions(user, target.Writers) {
+		t.log.Error("Forbidden target.put for ", user.Email, " in ", target.ID)
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Access denied.",
 		})
 		return
 	}

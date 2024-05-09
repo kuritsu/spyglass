@@ -55,3 +55,10 @@ func CheckPermissions(user *types.User, targetPermissions []string) bool {
 	}
 	return true
 }
+
+func EnsurePermissions(perms []string, user string) []string {
+	if len(perms) == 0 {
+		return []string{user}
+	}
+	return perms
+}
