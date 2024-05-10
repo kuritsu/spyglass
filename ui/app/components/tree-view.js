@@ -34,4 +34,9 @@ export default class TreeView extends Component {
     let lastSlash = id.lastIndexOf('/');
     return lastSlash > -1 ? id.substring(lastSlash + 1) : id;
   }
+
+  @action
+  onFilter(items) {
+    this.childrenVisibleCount = items.length;
+  }
 }
