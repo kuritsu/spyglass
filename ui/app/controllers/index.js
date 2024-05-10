@@ -2,15 +2,18 @@ import Controller from '@ember/controller';
 import { action } from '@ember/object';
 import { service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
+import { storageFor } from 'ember-local-storage';
 
 export default class IndexController extends Controller {
   @tracked error;
-  @tracked filteredTargets = null;
+  @tracked textFilter;
   @service componentConfig;
+  @storageFor('config') localConfig;
 
   init(params) {
     super.init(params);
     this.componentConfig.subscribe(this.onConfigChange);
+    this.textFilter = this.localConfig.get('textFilter');
   }
 
   @action
@@ -20,13 +23,8 @@ export default class IndexController extends Controller {
       return;
     }
     if (prop == 'textFilter') {
-      if (!this.model) return;
-      let selected = [];
-      this.model.forEach((e) => {
-        if (JSON.stringify(e).toLowerCase().indexOf(value.toLowerCase()) != -1)
-          selected.push(e);
-      });
-      this.filteredTargets = selected;
+      this.textFilter = value;
+      return;
     }
   }
 }
