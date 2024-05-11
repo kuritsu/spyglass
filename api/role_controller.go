@@ -89,7 +89,6 @@ func (t *RoleController) Add(c *gin.Context) {
 	userValue, _ := c.Get("user")
 	user := userValue.(*types.User)
 	role.Owners = EnsurePermissions(role.Owners, user.Email)
-	role.Readers = EnsurePermissions(role.Readers, user.Email)
 	role.Writers = EnsurePermissions(role.Writers, user.Email)
 	err := t.db.InsertRole(&role, user)
 	if err != nil {

@@ -359,7 +359,6 @@ func (t *TargetController) monitorMissing(monitorRef *types.MonitorRef) *ErrorWi
 
 func (t *TargetController) ensurePermissionsRecursive(target *types.Target, user *types.User) {
 	target.Owners = EnsurePermissions(target.Owners, user.Email)
-	target.Readers = EnsurePermissions(target.Readers, user.Email)
 	target.Writers = EnsurePermissions(target.Writers, user.Email)
 	for _, c := range target.Children {
 		t.ensurePermissionsRecursive(c, user)

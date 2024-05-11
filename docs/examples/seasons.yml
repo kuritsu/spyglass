@@ -2,20 +2,25 @@ id: seasons
 description: Seasons
 status: 0
 statusDescription: Progress of the seasons
+readers: ["admin"]
 children:
 - id: 1-spring
   description: Spring
   status: 100
   statusDescription: Spring finisshed
+  readers: ["admin"]
 - id: 2-summer
   description: Summer
   status: 30
   statusDescription: Summer is on going
+  readers: ["admin"]
 - id: 3-autumn
   description: Autumn
   status: 0
   statusDescription: Autumn not started
+  readers: ["admin"]
 - id: 4-winter
   description: Winter
   status: 0
   statusDescription: Winter not started
+  readers: ["admin"]

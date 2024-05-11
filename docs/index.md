@@ -42,14 +42,15 @@ Fields:
 ### Permissions
 
 By default, all resources created has:
-- Owners  = [user group exclusive to the creator]
-  - Note: Only the owners can change Owners, Readers and Writers fields, as well as delete the root target or monitor or user group.
-- Readers = ["users"], referencing special group called "users", a user group which every user is member by default.
+- Owners  = [user] (User who created the resource)
+  - Note: Only the owners can change Owners, Readers and Writers fields, as well as delete the root target or monitor, role or user.
+- Readers = [] (empty means all users are readers)
   - Note: Readers have read only access to the existing data.
-- Writers = user groups of the creator
+- Writers = [user] (User who created the resource)
   - For targets, users can create, modify and delete targets under the specified target (not the root target)
   - For monitors, users can modify target configuration.
-  - For user groups, users can modify the user group, but not delete.
+  - For users, users can modify the password of other users.
+  - For roles, users can assign/revoke the roles to other users.
 This can be changed at creation time, specifying Readers, Writers and Owners list on the resource definition.
 
 ### User

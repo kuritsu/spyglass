@@ -447,7 +447,6 @@ func (p *MongoDB) Register(email string, password string) (*types.User, error) {
 		FirstHash: string(epwd),
 		Permissions: types.Permissions{
 			Owners:    []string{email},
-			Readers:   []string{email},
 			Writers:   []string{email},
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),

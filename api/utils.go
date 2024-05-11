@@ -48,7 +48,8 @@ func NewObjectFromFile[T any](fileName string) (*T, error) {
 }
 
 func CheckPermissions(user *types.User, targetPermissions []string) bool {
-	if !slices.Contains(user.Roles, "admins") &&
+	if len(targetPermissions) > 0 &&
+		!slices.Contains(user.Roles, "admins") &&
 		!slices.Contains(targetPermissions, user.Email) &&
 		!CommonElems(targetPermissions, user.Roles) {
 		return false
