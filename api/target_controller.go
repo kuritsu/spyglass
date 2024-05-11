@@ -70,6 +70,7 @@ func (t *TargetController) Get(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Target not found.",
 		})
+		return
 	}
 	if target.Children != nil {
 		tempChildren := make([]types.TargetRef, 0, len(target.Children))

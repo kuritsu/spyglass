@@ -20,8 +20,8 @@ type Target struct {
 	Critical          bool        `json:"critical" yaml:"critical"`
 	Monitor           *MonitorRef `json:"monitor,omitempty" bson:",omitempty"`
 	Children          []TargetRef `json:"children,omitempty" yaml:"children,omitempty" bson:",omitempty"`
-	ChildrenRef       []string    `json:"childrenRef,omitempty" yaml:"childrenRef,omitempty" bson:",omitempty"`
-	Permissions
+	ChildrenRef       []string    `json:"childrenRef,omitempty" bson:",omitempty"`
+	Permissions       `yaml:",inline"`
 }
 
 type TargetRef *Target
