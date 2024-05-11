@@ -20,11 +20,11 @@
                 @backdropClose={{true}}
                 @onHide={{this.close}}
                 @renderInPlace={{true}} >
-                Owners: {{@target.owners}}
+                Owners: {{this.getHumanPermissions @target.owners}}
                 <br>
-                Writers: {{@target.writers}}
+                Writers: {{this.getHumanPermissions @target.writers}}
                 <br>
-                Readers: {{@target.readers}}
+                Readers: {{this.getHumanPermissions @target.readers}}
             </BsModalSimple>
         </div>
         <div style="margin-top: 5px;"></div>

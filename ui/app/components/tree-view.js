@@ -39,4 +39,11 @@ export default class TreeView extends Component {
   onFilter(items) {
     this.childrenVisibleCount = items.length;
   }
+
+  getHumanPermissions(list) {
+    if (!list) {
+      return "(everyone)";
+    }
+    return list;
+  }
 }
