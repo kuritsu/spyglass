@@ -31,6 +31,7 @@ func UserFlags() *UserOptions {
 	result.flagSet = flag.NewFlagSet("user", flag.ContinueOnError)
 	result.actions = make(map[string]Command)
 	result.actions["list"] = UserListActionFlags(result.flagSet)
+	result.actions["token"] = UserTokenActionFlags(result.flagSet)
 	//result.actions["rm"] = TargetUpdateStatusActionFlags(result.flagSet)
 	result.flagSet.Usage = func() {
 		args := result.flagSet.Args()

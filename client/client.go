@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/kuritsu/spyglass/api/types"
 	logr "github.com/sirupsen/logrus"
@@ -295,6 +296,35 @@ func (c *APIClient) ListUsers(pageIndex, pageSize int) ([]*types.User, error) {
 	if err = json.Unmarshal(bodyBytes, &result); err != nil {
 		return nil, err
 	}
+	return result, nil
+}
+
+func (c *APIClient) CreateUserToken(email string, expiration time.Time) (string, error) {
+	c.log.Debug("CreateUserToken ", email)
+	userTokenReq := types.UserTokenRequest{
+		Expiration: expiration,
+	}
+	bodyBytes, _ := json.Marshal(userTokenReq)
+	reader := strings.NewReader(string(bodyBytes))
+	request, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/user/token/%s", c.url, email), reader)
+	c.addAuthHeader(request)
+	response, err := c.client.Do(request)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return "", c.errorWithMessage(response)
+	}
+	var result string
+	bodyBytes, rerr := io.ReadAll(response.Body)
+	if rerr != nil {
+		return "", rerr
+	}
+	if err = json.Unmarshal(bodyBytes, &result); err != nil {
+		return "", err
+	}
+	c.log.Debug("Create user token success.")
 	return result, nil
 }
 

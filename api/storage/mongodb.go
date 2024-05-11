@@ -460,11 +460,11 @@ func (p *MongoDB) Register(email string, password string) (*types.User, error) {
 	return &user, nil
 }
 
-func (p *MongoDB) CreateUserToken(user *types.User) (string, error) {
+func (p *MongoDB) CreateUserToken(user *types.User, expiration time.Time) (string, error) {
 	tokenUuid := uuid.NewString()
 	token := types.UserToken{
 		Email:      user.Email,
-		Expiration: time.Now().UTC().Add(time.Hour * 24),
+		Expiration: expiration,
 		Token:      tokenUuid,
 	}
 	_, err := p.client.Database("spyglass").Collection("Tokens").InsertOne(

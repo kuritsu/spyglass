@@ -1,8 +1,10 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	logr "github.com/sirupsen/logrus"
 
@@ -49,7 +51,7 @@ func (t *UserController) Login(c *gin.Context) {
 		return
 	}
 	t.log.Info("User ", creds.Email, " authenticated.")
-	token, err := t.db.CreateUserToken(user)
+	token, err := t.db.CreateUserToken(user, time.Now().UTC().Add(time.Hour*24))
 	if err != nil {
 		t.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -85,7 +87,45 @@ func (t *UserController) Register(c *gin.Context) {
 		return
 	}
 	t.log.Info("User ", creds.Email, " created.")
-	token, err := t.db.CreateUserToken(user)
+	token, err := t.db.CreateUserToken(user, time.Now().UTC().Add(time.Hour*24))
+	if err != nil {
+		t.log.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, token)
+}
+
+func (t *UserController) CreateToken(c *gin.Context) {
+	var req types.UserTokenRequest
+	if er := c.ShouldBind(&req); er != nil || req.Expiration.After(time.Now().AddDate(1, 0, 0)) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": er.Error(),
+		})
+		return
+	}
+	t.db.Init()
+	defer t.db.Free()
+	userId := c.Param("id")
+	user, err := t.db.GetUser(userId)
+	if err != nil {
+		t.log.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	currentUserValue, _ := c.Get("user")
+	currentUser := currentUserValue.(*types.User)
+	if !CheckPermissions(currentUser, user.Writers) {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": fmt.Sprintf("Not enough permissions on user %s.", userId),
+		})
+		return
+	}
+	token, err := t.db.CreateUserToken(user, req.Expiration)
 	if err != nil {
 		t.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -124,8 +164,8 @@ func (t *UserController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	currentUserValue, _ := c.Get("user")
+	user := currentUserValue.(*types.User)
 	result := make([]*types.User, 0, len(users))
 	for _, r := range users {
 		if !CheckPermissions(user, r.Readers) {

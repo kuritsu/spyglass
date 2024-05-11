@@ -1,6 +1,10 @@
 package client
 
-import "github.com/kuritsu/spyglass/api/types"
+import (
+	"time"
+
+	"github.com/kuritsu/spyglass/api/types"
+)
 
 // APICaller interface
 type APICaller interface {
@@ -15,4 +19,5 @@ type APICaller interface {
 	UpdateRole(role string, usersAdd, usersRemove []string) error
 	ListRoles(pageIndex, pageSize int) ([]*types.Role, error)
 	ListUsers(pageIndex, pageSize int) ([]*types.User, error)
+	CreateUserToken(email string, expiration time.Time) (string, error)
 }

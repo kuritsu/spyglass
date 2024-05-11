@@ -1,6 +1,10 @@
 package storage
 
-import "github.com/kuritsu/spyglass/api/types"
+import (
+	"time"
+
+	"github.com/kuritsu/spyglass/api/types"
+)
 
 // Provider for storage
 type Provider interface {
@@ -20,7 +24,7 @@ type Provider interface {
 	UpdateTarget(*types.Target, *types.Target, bool) (*types.Target, error)
 	Login(string, string) (*types.User, error)
 	Register(string, string) (*types.User, error)
-	CreateUserToken(*types.User) (string, error)
+	CreateUserToken(*types.User, time.Time) (string, error)
 	ValidateToken(string, string) error
 	GetUser(string) (*types.User, error)
 	UpdateUser(*types.User, string, string) error
