@@ -52,9 +52,10 @@ func printGlobalHelp(fs *flag.FlagSet) {
 	fmt.Println("Usage:")
 	fmt.Println("  spyglass <command> [global-flags]")
 	fmt.Println("\nCommands:")
-	for k, v := range CommandList {
+
+	for _, k := range commands.GetSortedKeyList(CommandList) {
 		fmt.Println("  ", k)
-		fmt.Println("    ", v.Description())
+		fmt.Println("    ", CommandList[k].Description())
 	}
 	fmt.Println("\nGlobal flags:")
 	fs.PrintDefaults()

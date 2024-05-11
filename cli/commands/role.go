@@ -47,8 +47,8 @@ func RoleFlags() *RoleOptions {
 		fmt.Println("Usage:")
 		fmt.Println("  spyglass role [global-flags] <action> ")
 		fmt.Println("\nActions:")
-		for k, v := range result.actions {
-			fmt.Printf("  %s: %s\n", k, v.Description())
+		for _, k := range GetSortedKeyList(result.actions) {
+			fmt.Printf("  %s: %s\n", k, result.actions[k].Description())
 		}
 		fmt.Println("\nGlobal Flags:")
 		result.flagSet.PrintDefaults()

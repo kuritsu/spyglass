@@ -38,7 +38,7 @@ func processArgs(cliObj *commands.CommandLineContext) {
 	}
 	cliObj.Caller.Init(options.APIAddress)
 
-	cliObj.Log.Println("Setting log level to", options.LogLevel)
+	cliObj.Log.Debug("Setting log level to", options.LogLevel)
 	cliObj.Log.SetLevel(options.LogLevelInt)
 
 	runner := options.Action.Apply(cliObj)
