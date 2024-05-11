@@ -9,6 +9,8 @@ type Provider interface {
 
 	GetAllMonitors(int64, int64, string) ([]types.Monitor, error)
 	GetAllTargets(int64, int64, string) ([]*types.Target, error)
+	GetAllRoles(int64, int64) ([]*types.Role, error)
+	GetAllUsers(int64, int64) ([]*types.User, error)
 	GetMonitorByID(string) (*types.Monitor, error)
 	GetTargetByID(id string, includeChildren bool) (*types.Target, error)
 	InsertMonitor(*types.Monitor) (*types.Monitor, error)
@@ -23,4 +25,5 @@ type Provider interface {
 	GetUser(string) (*types.User, error)
 	UpdateUser(*types.User, string, string) error
 	InsertRole(*types.Role, *types.User) error
+	GetRole(string) (*types.Role, error)
 }

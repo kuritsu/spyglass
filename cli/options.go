@@ -35,6 +35,7 @@ var CommandList = map[string]commands.Command{
 	"server": commands.ServerFlags(),
 	"target": commands.TargetFlags(),
 	"ui":     commands.UIOptionsFlags(),
+	"user":   commands.UserFlags(),
 }
 
 func defineGlobalFlags(fs *flag.FlagSet, opts *Options) {

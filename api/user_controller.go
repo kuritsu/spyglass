@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	logr "github.com/sirupsen/logrus"
 
@@ -93,6 +94,48 @@ func (t *UserController) Register(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, token)
+}
+
+// GetAll users, paginated
+func (t *UserController) GetAll(c *gin.Context) {
+	t.db.Init()
+	defer t.db.Free()
+	pageSizeString := c.DefaultQuery("pageSize", "100")
+	pageIndexString := c.DefaultQuery("pageIndex", "0")
+	pageSize, err := strconv.ParseInt(pageSizeString, 10, 64)
+	if err != nil || pageSize > 100 || pageSize < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid page size.",
+		})
+		return
+	}
+	pageIndex, err := strconv.ParseInt(pageIndexString, 10, 64)
+	if err != nil || pageIndex < 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid page index.",
+		})
+		return
+	}
+	users, err := t.db.GetAllUsers(pageSize, pageIndex)
+	if err != nil {
+		t.log.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid operation. Try again.",
+		})
+		return
+	}
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	result := make([]*types.User, 0, len(users))
+	for _, r := range users {
+		if !CheckPermissions(user, r.Readers) {
+			continue
+		}
+		r.PassHash = ""
+		r.FirstHash = ""
+		result = append(result, r)
+	}
+	c.JSON(http.StatusOK, []*types.User(result))
 }
 
 func (t *UserController) Update(c *gin.Context) {

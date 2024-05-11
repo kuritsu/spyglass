@@ -8,32 +8,29 @@ import (
 	"github.com/kuritsu/spyglass/cli/runner"
 )
 
-// RoleOptions according to arguments
-type RoleOptions struct {
+// UserOptions according to arguments
+type UserOptions struct {
 	flagSet *flag.FlagSet
 	c       *CommandLineContext
 	actions map[string]Command
 }
 
 // GetFlags for the current command.
-func (o *RoleOptions) GetFlags() *flag.FlagSet {
+func (o *UserOptions) GetFlags() *flag.FlagSet {
 	return o.flagSet
 }
 
 // Description for the current command.
-func (o *RoleOptions) Description() string {
-	return "Manages roles."
+func (o *UserOptions) Description() string {
+	return "Manages users."
 }
 
-// RoleFlags obtains flags for apply action
-func RoleFlags() *RoleOptions {
-	result := RoleOptions{}
-	result.flagSet = flag.NewFlagSet("role", flag.ContinueOnError)
+// UserFlags obtains flags for apply action
+func UserFlags() *UserOptions {
+	result := UserOptions{}
+	result.flagSet = flag.NewFlagSet("user", flag.ContinueOnError)
 	result.actions = make(map[string]Command)
-	result.actions["add"] = RoleAddActionFlags(result.flagSet)
-	result.actions["assign"] = RoleAssignActionFlags(result.flagSet)
-	result.actions["list"] = RoleListActionFlags(result.flagSet)
-	result.actions["revoke"] = RoleRevokeActionFlags(result.flagSet)
+	result.actions["list"] = UserListActionFlags(result.flagSet)
 	//result.actions["rm"] = TargetUpdateStatusActionFlags(result.flagSet)
 	result.flagSet.Usage = func() {
 		args := result.flagSet.Args()
@@ -45,7 +42,7 @@ func RoleFlags() *RoleOptions {
 			}
 		}
 		fmt.Println("Usage:")
-		fmt.Println("  spyglass role [global-flags] <action> ")
+		fmt.Println("  spyglass user [global-flags] <action> ")
 		fmt.Println("\nActions:")
 		for k, v := range result.actions {
 			fmt.Printf("  %s: %s\n", k, v.Description())
@@ -57,9 +54,9 @@ func RoleFlags() *RoleOptions {
 }
 
 // Apply the command.
-func (o *RoleOptions) Apply(c *CommandLineContext) runner.Runner {
+func (o *UserOptions) Apply(c *CommandLineContext) runner.Runner {
 	o.c = c
-	c.Log.Debug("Doing role...")
+	c.Log.Debug("Doing user...")
 	nonFlag := o.flagSet.Args()
 	if len(nonFlag) == 0 {
 		return &runner.ExitError{FlagSet: o.flagSet,

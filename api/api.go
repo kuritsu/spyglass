@@ -43,19 +43,22 @@ func (api *API) Serve() *gin.Engine {
 
 	authMid := AuthMiddleware(api.db, api.log)
 
-	r.GET("/monitors/:id", authMid, monitors.Get)
 	r.GET("/monitors", authMid, monitors.GetAll)
-	r.POST("/monitors", authMid, monitors.Post)
-	r.PUT("/monitors/:id", authMid, monitors.Put)
+	r.GET("/monitors/:id", authMid, monitors.Get)
+	r.GET("/roles", authMid, roles.GetAll)
 	r.GET("/target", authMid, targets.Get)
 	r.GET("/targets", authMid, targets.GetAll)
+	r.GET("/users", authMid, users.GetAll)
+	r.PATCH("/role/:id", authMid, roles.Update)
 	r.PATCH("/target", authMid, targets.Patch)
+	r.PATCH("/user/:id", authMid, users.Update)
+	r.POST("/monitors", authMid, monitors.Post)
+	r.POST("/roles", authMid, roles.Add)
 	r.POST("/targets", authMid, targets.Post)
-	r.PUT("/target", authMid, targets.Put)
 	r.POST("/user/login", users.Login)
 	r.POST("/users", users.Register)
-	r.PATCH("/user/:id", authMid, users.Update)
-	r.POST("/roles", authMid, roles.Add)
+	r.PUT("/monitors/:id", authMid, monitors.Put)
+	r.PUT("/target", authMid, targets.Put)
 
 	go api.statusUpdateJob.Run()
 
