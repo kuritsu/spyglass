@@ -15,6 +15,7 @@ type APICaller interface {
 	InsertOrUpdateMonitor(*types.Monitor) error
 	InsertOrUpdateTarget(target *types.Target, forceStatusUpdate bool) error
 	UpdateTargetStatus(string, int, string) error
+	DeleteTarget(string) (int, error)
 	InsertRole(*types.Role) error
 	UpdateRole(role string, usersAdd, usersRemove []string) error
 	ListRoles(pageIndex, pageSize int) ([]*types.Role, error)

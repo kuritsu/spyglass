@@ -185,6 +185,26 @@ func (c *APIClient) GetTargetByID(id string, includeChildren bool) (types.Target
 	return result, nil
 }
 
+func (c *APIClient) DeleteTarget(id string) (int, error) {
+	c.log.Debug("Delete target ", id)
+	request, _ := http.NewRequest(http.MethodDelete,
+		fmt.Sprintf("%s/target?id=%s", c.url, url.QueryEscape(id)), http.NoBody)
+	c.addAuthHeader(request)
+	response, err := c.client.Do(request)
+	if err != nil {
+		return 0, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return 0, c.errorWithMessage(response)
+	}
+	responseBytes, _ := io.ReadAll(response.Body)
+	responseMsg := make(map[string]int)
+	json.Unmarshal(responseBytes, &responseMsg)
+	deleteCount := responseMsg["deletedCount"]
+	return deleteCount, nil
+}
+
 func (c *APIClient) Login(email string, password string) (string, error) {
 	c.log.Debug("Login ", email)
 	userPwdDict := types.AuthRequest{

@@ -43,6 +43,7 @@ func (api *API) Serve() *gin.Engine {
 
 	authMid := AuthMiddleware(api.db, api.log)
 
+	r.DELETE("/target", authMid, targets.Delete)
 	r.GET("/monitors", authMid, monitors.GetAll)
 	r.GET("/monitors/:id", authMid, monitors.Get)
 	r.GET("/roles", authMid, roles.GetAll)

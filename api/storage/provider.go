@@ -22,6 +22,7 @@ type Provider interface {
 	UpdateMonitor(*types.Monitor, *types.Monitor) (*types.Monitor, error)
 	UpdateTargetStatus(*types.Target, *types.TargetPatch) (*types.Target, error)
 	UpdateTarget(*types.Target, *types.Target, bool) (*types.Target, error)
+	DeleteTarget(id string) (int, error)
 	Login(string, string) (*types.User, error)
 	Register(string, string) (*types.User, error)
 	CreateUserToken(*types.User, time.Time) (string, error)

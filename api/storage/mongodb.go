@@ -416,6 +416,17 @@ func (p *MongoDB) UpdateTarget(oldTarget *types.Target, newTarget *types.Target,
 	return newTarget, nil
 }
 
+func (p *MongoDB) DeleteTarget(id string) (int, error) {
+	col := p.client.Database("spyglass").Collection("Targets")
+	containsRegex := types.GetIDForRegex(id)
+	containsRegex = fmt.Sprintf("%s(/.*)*", containsRegex)
+	result, err := col.DeleteMany(p.context, bson.M{"id": bson.M{"$regex": containsRegex}}, nil)
+	if err != nil {
+		return 0, err
+	}
+	return int(result.DeletedCount), nil
+}
+
 func (p *MongoDB) Login(email string, password string) (*types.User, error) {
 	col := p.client.Database("spyglass").Collection("Users")
 	expr := bson.M{"email": email}

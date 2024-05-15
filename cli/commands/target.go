@@ -33,6 +33,7 @@ func TargetFlags() *TargetOptions {
 	result.actions["add"] = TargetAddActionFlags(result.flagSet)
 	result.actions["get"] = TargetGetActionFlags(result.flagSet)
 	result.actions["list"] = TargetListActionFlags(result.flagSet)
+	result.actions["rm"] = TargetRemoveActionFlags(result.flagSet)
 	result.actions["update-status"] = TargetUpdateStatusActionFlags(result.flagSet)
 	result.flagSet.Usage = func() {
 		args := result.flagSet.Args()

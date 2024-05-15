@@ -322,6 +322,53 @@ func (t *TargetController) Put(c *gin.Context) {
 	c.JSON(http.StatusOK, newTarget)
 }
 
+// Deletes a target by its ID
+func (t *TargetController) Delete(c *gin.Context) {
+	id := c.Query("id")
+	if id == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Invalid parameter: id.",
+		})
+		return
+	}
+	t.db.Init()
+	defer t.db.Free()
+	target, err := t.db.GetTargetByID(id, false)
+	switch {
+	case err != nil:
+		t.log.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal error. Try again.",
+		})
+		return
+	case target == nil:
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Target not found.",
+		})
+		return
+	}
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	if !CheckPermissions(user, target.Owners) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Not enough permissions for deleting target.",
+		})
+		return
+	}
+	count, err := t.db.DeleteTarget(id)
+	if err != nil {
+		t.log.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Internal error. Try again.",
+		})
+		return
+	}
+	t.log.Info("target.Delete deletedCount=", count)
+	c.JSON(http.StatusOK, gin.H{
+		"deletedCount": count,
+	})
+}
+
 func (t *TargetController) parentMissing(childID string) (*types.Target, *ErrorWithCode) {
 	parentID := types.GetTargetParentByID(childID)
 	if parentID == "" {
