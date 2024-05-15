@@ -170,7 +170,7 @@ func (p *MongoDB) Free() {
 }
 
 // GetAllMonitors returns all monitors which contains a string, paginated.
-func (p *MongoDB) GetAllMonitors(pageSize int64, pageIndex int64, contains string) ([]types.Monitor, error) {
+func (p *MongoDB) GetAllMonitors(pageSize int64, pageIndex int64, contains string) ([]*types.Monitor, error) {
 	col := p.client.Database("spyglass").Collection("Monitors")
 	filter := bson.M{}
 	if contains != "" {
@@ -187,7 +187,7 @@ func (p *MongoDB) GetAllMonitors(pageSize int64, pageIndex int64, contains strin
 	if err != nil {
 		return nil, err
 	}
-	monitors := make([]types.Monitor, 0)
+	monitors := make([]*types.Monitor, 0)
 	err = cursor.All(p.context, &monitors)
 	if err != nil {
 		return nil, err

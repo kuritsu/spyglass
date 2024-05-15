@@ -117,8 +117,7 @@ func (t *UserController) CreateToken(c *gin.Context) {
 		})
 		return
 	}
-	currentUserValue, _ := c.Get("user")
-	currentUser := currentUserValue.(*types.User)
+	currentUser := GetCurrentUser(c)
 	if !CheckPermissions(currentUser, user.Writers) {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": fmt.Sprintf("Not enough permissions on user %s.", userId),
@@ -164,8 +163,7 @@ func (t *UserController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	currentUserValue, _ := c.Get("user")
-	user := currentUserValue.(*types.User)
+	user := GetCurrentUser(c)
 	result := make([]*types.User, 0, len(users))
 	for _, r := range users {
 		if !CheckPermissions(user, r.Readers) {
@@ -188,8 +186,7 @@ func (t *UserController) Update(c *gin.Context) {
 	}
 	t.db.Init()
 	defer t.db.Free()
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	if userUpdate.FullName != "" {
 		user.FullName = userUpdate.FullName
 	}

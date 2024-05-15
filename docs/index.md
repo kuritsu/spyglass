@@ -28,20 +28,19 @@ Fields:
 - Definition: Monitor definition, depending on the type.
   - Docker, K8S:
     - Image: Image name
-    - Entrypoint: Entry point
+    - Command: Command to run
     - Env: List of environment variables
       - Name: param_name
         Value: "${param}"
   - LambdaFunction:
     - LambdaArn: ARN of lambda function
     - Event: Full JSON of the event info to pass to the function.
-  - AzureFunction: 
-    - AzureFunc: URL of azure function
-    - Body: Full JSON of the body to pass to the function.
+  - Shell:
+    - Command: Commands to run in a Shell session.
+    - Env: List of environment variables
 
 ### Permissions
-
-By default, all resources created has:
+By default, all resources created have:
 - Owners  = [user] (User who created the resource)
   - Note: Only the owners can change Owners, Readers and Writers fields, as well as delete the root target or monitor, role or user.
 - Readers = [] (empty means all users are readers)
@@ -63,16 +62,15 @@ Fields:
 - FullName: Optional full name of the user.
 
 Special user:
-- admin: Full administrator user. Cannot be deleted. Password set in service backend configuration.
+- admin: Full administrator user. Cannot be deleted. Password default is "admin".
 
-### User groups
+### Roles
 
-A user group is created by a user.
+A role is created by a user.
 
 Fields:
-- Name: Name of the user group.
-- Users: List of users (by UserEmail) belonging to the group.
+- Name: Name of the role.
+- Description: Description of the role.
 
-Special user groups (cannot be deleted):
-- users (all users are members)
+Special roles (cannot be deleted):
 - admins (only admin users are members, configured on the backend)

@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/kuritsu/spyglass/api/types"
 	"gopkg.in/yaml.v2"
 )
@@ -62,4 +63,10 @@ func EnsurePermissions(perms []string, user string) []string {
 		return []string{user}
 	}
 	return perms
+}
+
+func GetCurrentUser(c *gin.Context) *types.User {
+	userValue, _ := c.Get("user")
+	user := userValue.(*types.User)
+	return user
 }

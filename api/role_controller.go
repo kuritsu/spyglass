@@ -64,8 +64,7 @@ func (t *RoleController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	result := make([]*types.Role, 0, len(roles))
 	for _, r := range roles {
 		if !CheckPermissions(user, r.Readers) {
@@ -86,8 +85,7 @@ func (t *RoleController) Add(c *gin.Context) {
 	}
 	t.db.Init()
 	defer t.db.Free()
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	role.Owners = EnsurePermissions(role.Owners, user.Email)
 	role.Writers = EnsurePermissions(role.Writers, user.Email)
 	err := t.db.InsertRole(&role, user)
@@ -120,8 +118,7 @@ func (t *RoleController) Update(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	if !CheckPermissions(user, role.Writers) {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Not enough permissions to change role.",

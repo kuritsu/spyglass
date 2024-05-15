@@ -64,8 +64,7 @@ func (t *TargetController) Get(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	if !CheckPermissions(user, target.Readers) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Target not found.",
@@ -120,8 +119,7 @@ func (t *TargetController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	result := make([]*types.Target, 0, len(targets))
 	for _, t := range targets {
 		if !CheckPermissions(user, t.Readers) {
@@ -156,8 +154,7 @@ func (t *TargetController) Post(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	if parent == nil && !slices.Contains(user.Roles, "admins") {
 		t.log.Error("Only admins can create root targets.")
 		c.JSON(http.StatusForbidden, gin.H{
@@ -235,8 +232,7 @@ func (t *TargetController) Patch(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	if !CheckPermissions(user, target.Writers) {
 		t.log.Error("Forbidden target.patch for ", user.Email, " in ", target.ID)
 		c.JSON(http.StatusForbidden, gin.H{
@@ -302,8 +298,7 @@ func (t *TargetController) Put(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	if !CheckPermissions(user, target.Writers) {
 		t.log.Error("Forbidden target.put for ", user.Email, " in ", target.ID)
 		c.JSON(http.StatusForbidden, gin.H{
@@ -347,8 +342,7 @@ func (t *TargetController) Delete(c *gin.Context) {
 		})
 		return
 	}
-	userValue, _ := c.Get("user")
-	user := userValue.(*types.User)
+	user := GetCurrentUser(c)
 	if !CheckPermissions(user, target.Owners) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Not enough permissions for deleting target.",

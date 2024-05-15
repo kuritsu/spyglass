@@ -6,8 +6,8 @@ import (
 
 // MonitorRef is a reference to an existing monitor
 type MonitorRef struct {
-	MonitorID string            `json:"monitorId,omitempty" bson:"monitorId" hcl:"monitor_id"`
-	Params    map[string]string `json:"params,omitempty" bson:",omitempty" hcl:"params,optional"`
+	MonitorID string            `json:"monitorId,omitempty" bson:"monitorId" yaml:"monitorId"`
+	Params    map[string]string `json:"params,omitempty" bson:",omitempty" yaml:"params,omitempty"`
 }
 
 // Target full object

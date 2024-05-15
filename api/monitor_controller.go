@@ -43,13 +43,18 @@ func (m *MonitorController) Get(c *gin.Context) {
 		})
 		return
 	}
+	user := GetCurrentUser(c)
+	if !CheckPermissions(user, monitor.Owners) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Monitor not found.",
+		})
+		return
+	}
 	c.JSON(http.StatusOK, monitor)
 }
 
 // GetAll monitors, paginated
 func (m *MonitorController) GetAll(c *gin.Context) {
-	m.db.Init()
-	defer m.db.Free()
 	pageSizeString := c.DefaultQuery("pageSize", "10")
 	pageIndexString := c.DefaultQuery("pageIndex", "0")
 	pageSize, err := strconv.ParseInt(pageSizeString, 10, 64)
@@ -73,7 +78,9 @@ func (m *MonitorController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	monitor, err := m.db.GetAllMonitors(pageSize, pageIndex, contains)
+	m.db.Init()
+	defer m.db.Free()
+	monitors, err := m.db.GetAllMonitors(pageSize, pageIndex, contains)
 	if err != nil {
 		m.log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -81,7 +88,15 @@ func (m *MonitorController) GetAll(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, []types.Monitor(monitor))
+	user := GetCurrentUser(c)
+	result := make([]*types.Monitor, 0, len(monitors))
+	for _, monitor := range monitors {
+		if !CheckPermissions(user, monitor.Readers) {
+			continue
+		}
+		result = append(result, monitor)
+	}
+	c.JSON(http.StatusOK, result)
 }
 
 // Post a new monitor
@@ -101,11 +116,13 @@ func (m *MonitorController) Post(c *gin.Context) {
 	}
 	m.db.Init()
 	defer m.db.Free()
+	user := GetCurrentUser(c)
+	monitor.Owners = EnsurePermissions(monitor.Owners, user.Email)
+	monitor.Writers = EnsurePermissions(monitor.Writers, user.Email)
 	_, err := m.db.InsertMonitor(&monitor)
 	if err != nil {
 		m.log.Error(err)
-		if strings.Contains(err.Error(), "duplicate") ||
-			strings.Contains(err.Error(), "Duplicate") {
+		if strings.Contains(strings.ToLower(err.Error()), "duplicate") {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Duplicate monitor ID.",
 			})
@@ -152,6 +169,13 @@ func (m *MonitorController) Put(c *gin.Context) {
 	}
 	m.db.Init()
 	defer m.db.Free()
+	user := GetCurrentUser(c)
+	if !CheckPermissions(user, oldMonitor.Writers) {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Not enough permissions to update monitor.",
+		})
+		return
+	}
 	updatedMonitor, err := m.db.UpdateMonitor(oldMonitor, &newMonitor)
 	if err != nil {
 		m.log.Error(err)

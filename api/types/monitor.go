@@ -1,61 +1,43 @@
 package types
 
-// TargetDefinition is the definition of a target
-type TargetDefinition struct {
-	TargetID string `json:"targetId,omitempty" bson:",omitempty" hcl:"target_id,optional"`
-}
-
 // DockerDefinition is a Docker task definition
-type DockerDefinition struct {
-	Image      string            `json:"image,omitempty" bson:",omitempty" hcl:"image,optional"`
-	Entrypoint string            `json:"entrypoint,omitempty" bson:",omitempty" hcl:"entrypoint,optional"`
-	DockerEnv  map[string]string `json:"dockerEnv,omitempty" bson:",omitempty" hcl:"docker_env,optional"`
+type DockerJobDefinition struct {
+	Image     string            `json:"image,omitempty" bson:",omitempty" yaml:"image"`
+	Command   string            `json:"command,omitempty" bson:",omitempty" yaml:"entrypoint"`
+	DockerEnv map[string]string `json:"dockerEnv,omitempty" bson:",omitempty" yaml:"dockerEnv"`
 }
 
 // K8SDefinition is a Kubernetes task definition
-type K8SDefinition struct {
-	Pod *DockerDefinition `json:"pod,omitempty" bson:",omitempty" hcl:"pod,block"`
+type K8SJobDefinition struct {
+	Pod *DockerJobDefinition `json:"pod,omitempty" bson:",omitempty" yaml:"pod"`
 }
 
 // AWSServerlessDefinition is an AWS Lambda Serverless definition
-type AWSServerlessDefinition struct {
-	LambdaArn string `json:"lambdaArn,omitempty" bson:",omitempty" hcl:"lambda_arn,optional"`
-	Event     string `json:"event,omitempty" bson:",omitempty" hcl:"event,optional"`
-}
-
-// AzureServerlessDefinition is an Azure Function Serverless definition
-type AzureServerlessDefinition struct {
-	AzureFunc string `json:"azureFunc,omitempty" bson:",omitempty" hcl:"azure_func,optional"`
-	Body      string `json:"body,omitempty" bson:",omitempty" hcl:"body,optional"`
-}
-
-// ServerlessDefinition is a Serverless definition
-type ServerlessDefinition struct {
-	AWS   *AWSServerlessDefinition   `json:"aws,omitempty" bson:",omitempty" hcl:"aws,block"`
-	Azure *AzureServerlessDefinition `json:"azure,omitempty" bson:",omitempty" hcl:"azure,block"`
+type AWSJobDefinition struct {
+	LambdaArn string `json:"lambdaArn,omitempty" bson:",omitempty" yaml:"lambda_arn"`
+	Event     string `json:"event,omitempty" bson:",omitempty" yaml:"event"`
 }
 
 // ShellDefinition is a Shell command definition
-type ShellDefinition struct {
-	Command string            `json:"command,omitempty" bson:",omitempty" hcl:"command,optional"`
-	Env     map[string]string `json:"env,omitempty" bson:",omitempty" hcl:"env,optional"`
+type ShellJobDefinition struct {
+	Command string            `json:"command,omitempty" bson:",omitempty" yaml:"command"`
+	Env     map[string]string `json:"env,omitempty" bson:",omitempty" yaml:"env"`
 }
 
-// MonitorDefinition is a definition of a monitor
-type MonitorDefinition struct {
-	Docker     *DockerDefinition     `json:"docker,omitempty" bson:",omitempty" hcl:"docker,block"`
-	K8S        *K8SDefinition        `json:"k8s,omitempty" bson:",omitempty" hcl:"k8s,block"`
-	Serverless *ServerlessDefinition `json:"serverless,omitempty" bson:",omitempty" hcl:"serverless,block"`
-	Shell      *ShellDefinition      `json:"shell,omitempty" bson:",omitempty" hcl:"shell,block"`
-	Target     *TargetDefinition     `json:"target,omitempty" bson:",omitempty" hcl:"target,block"`
+// MonitorJobDefinition is a definition of a monitor
+type MonitorJobDefinition struct {
+	Docker *DockerJobDefinition `json:"docker,omitempty" bson:",omitempty" yaml:"docker"`
+	K8S    *K8SJobDefinition    `json:"k8s,omitempty" bson:",omitempty" yaml:"k8s"`
+	AWS    *AWSJobDefinition    `json:"aws,omitempty" bson:",omitempty" yaml:"aws"`
+	Shell  *ShellJobDefinition  `json:"shell,omitempty" bson:",omitempty" yaml:"shell"`
 }
 
-// Monitor is a monitor definition for a target
+// Monitor is a monitor definition to be assigned to targets
 type Monitor struct {
-	ID          string `json:"id" binding:"required" hcl:"id,label"`
-	Type        string `json:"type" binding:"required" hcl:"type"`
-	Schedule    string `json:"schedule" binding:"required" hcl:"schedule"`
-	Description string `json:"description,omitempty" bson:",omitempty" hcl:"description,optional"`
-	Permissions `hcl:",remain"`
-	Definition  *MonitorDefinition `json:"definition" binding:"required" hcl:"definition,block"`
+	ID          string                `json:"id" binding:"required" yaml:"id,label"`
+	Type        string                `json:"type" binding:"required" yaml:"type"`
+	Schedule    string                `json:"schedule" binding:"required" yaml:"schedule"`
+	Description string                `json:"description,omitempty" bson:",omitempty" yaml:"description"`
+	Definition  *MonitorJobDefinition `json:"definition" binding:"required" yaml:"definition"`
+	Permissions `yaml:",inline"`
 }
