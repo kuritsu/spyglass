@@ -1,0 +1,21 @@
+# Simple docker monitor
+# Setup:
+# - change volumes accordingly if on Windows or Linux
+# - create a token file in the mounted volume with the spyglass user API token.
+# - run spyglass scheduler -t docker
+id: docker-monitor
+schedule: "*/10 * * * *"
+description: Simple docker hour monitor. If hour = 0, status is 0, if hour = 23, status is 100
+tag: docker
+definition:
+  docker:
+    image: spyglass:ubuntu22
+    volumes:
+      "C:\\spyglass\\secrets": /mnt
+    env:
+      MSG: Hello world!
+    command: |
+      hour=`date +%H`
+      source /mnt/token
+      percent=$(( $hour * 100 / 23 ))
+      /opt/bin/spyglass target update-status -id $TARGET_ID -s $percent -d "Automatic using docker-monitor, and also $MSG"

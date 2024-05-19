@@ -1,0 +1,39 @@
+FROM ubuntu:22.04 AS build
+
+USER root
+
+RUN apt-get update -y && apt upgrade -y
+
+RUN apt-get install -y git curl make unzip
+
+RUN curl -L https://go.dev/dl/go1.22.2.linux-amd64.tar.gz -o /tmp/go.tar.gz
+
+RUN curl -L https://nodejs.org/dist/v20.13.1/node-v20.13.1-linux-x64.tar.gz -o /tmp/node.tar.gz
+
+RUN tar -xzvf /tmp/go.tar.gz -C /usr/local
+
+RUN tar -xzvf /tmp/node.tar.gz -C /usr/local
+
+ENV PATH=$PATH:/usr/local/go/bin:/usr/local/bin:/usr/local/node-v20.13.1-linux-x64/bin/
+
+RUN npm install -g ember-cli
+
+RUN cd /tmp; git clone https://github.com/kuritsu/spyglass
+
+WORKDIR /tmp/spyglass
+
+RUN make mod
+
+RUN cd ui; npm install
+
+RUN make ui-build
+
+RUN make
+
+FROM ubuntu:22.04 AS exe
+
+COPY --from=build /tmp/spyglass/spyglass /usr/bin/spyglass
+
+RUN /usr/bin/spyglass -h
+
+ENTRYPOINT [ "/bin/bash" ]

@@ -2,9 +2,10 @@ package types
 
 // DockerDefinition is a Docker task definition
 type DockerJobDefinition struct {
-	Image     string            `json:"image,omitempty" bson:",omitempty" yaml:"image"`
-	Command   string            `json:"command,omitempty" bson:",omitempty" yaml:"entrypoint"`
-	DockerEnv map[string]string `json:"dockerEnv,omitempty" bson:",omitempty" yaml:"dockerEnv"`
+	Image   string            `json:"image,omitempty" bson:",omitempty" yaml:"image"`
+	Command string            `json:"command,omitempty" bson:",omitempty" yaml:"command"`
+	Env     map[string]string `json:"env,omitempty" bson:",omitempty" yaml:"env"`
+	Volumes map[string]string `json:"volumes,omitempty" bson:",omitempty" yaml:"volumes"`
 }
 
 // K8SDefinition is a Kubernetes task definition
@@ -35,7 +36,7 @@ type MonitorJobDefinition struct {
 // Monitor is a monitor definition to be assigned to targets
 type Monitor struct {
 	ID          string                `json:"id" binding:"required" yaml:"id,label"`
-	Type        string                `json:"type" binding:"required" yaml:"type"`
+	Tag         string                `json:"tag" binding:"required" yaml:"tag"`
 	Schedule    string                `json:"schedule" binding:"required" yaml:"schedule"`
 	Description string                `json:"description,omitempty" bson:",omitempty" yaml:"description"`
 	Definition  *MonitorJobDefinition `json:"definition" binding:"required" yaml:"definition"`

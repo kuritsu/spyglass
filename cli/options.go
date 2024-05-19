@@ -60,6 +60,8 @@ func printGlobalHelp(fs *flag.FlagSet) {
 	}
 	fmt.Println("\nGlobal flags:")
 	fs.PrintDefaults()
+	fmt.Println("\nEnvironment variables:")
+	fmt.Println("  SPYGLASS_TOKEN: API authentication token in the format user:token.")
 }
 
 // GetOptions parses command line to get the options

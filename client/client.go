@@ -34,6 +34,10 @@ func Create(log *logr.Logger) APICaller {
 // Init -ialize the client with the url.
 func (c *APIClient) Init(url string) {
 	c.url = url
+	if token, ok := os.LookupEnv("SPYGLASS_TOKEN"); ok {
+		c.token = token
+		return
+	}
 	homedir, _ := os.UserHomeDir()
 	fname := filepath.Join(homedir, ".spyglass.token")
 	tokenBytes, err := os.ReadFile(fname)
@@ -68,9 +72,8 @@ func (c *APIClient) ListTargets(filter string, pageIndex int, pageSize int) ([]*
 
 // InsertOrUpdateMonitor operation.
 func (c *APIClient) InsertOrUpdateMonitor(monitor *types.Monitor) error {
-	var request *http.Request
 	c.log.Debug("Getting monitor ", monitor.ID)
-	request, _ = http.NewRequest("GET", fmt.Sprintf("%s/monitors/%s", c.url, monitor.ID), http.NoBody)
+	request, _ := http.NewRequest("GET", fmt.Sprintf("%s/monitors/%s", c.url, monitor.ID), http.NoBody)
 	c.addAuthHeader(request)
 	response, err := c.client.Do(request)
 	if err != nil {

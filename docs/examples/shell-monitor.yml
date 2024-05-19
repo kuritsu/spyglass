@@ -1,6 +1,7 @@
 id: shell-monitor
 schedule: "*/10 * * * *"
 description: Simple minute monitor. If minute = 0, status is 0, if minute = 59, status is 100
+tag: bash
 definition:
   shell:
     command: |
@@ -9,4 +10,3 @@ definition:
       percent=$(( $minute * 100 / 60 ))
       cd /c/Users/kurit/go/src/github.com/kuritsu/spyglass/
       ./spyglass target update-status -id $TARGET_ID -s $percent -d "Automatic using shell-monitor."
-    
