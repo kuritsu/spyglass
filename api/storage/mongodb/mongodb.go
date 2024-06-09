@@ -21,11 +21,10 @@ const (
 
 // MongoDB provider
 type MongoDB struct {
-	Log         *logrus.Logger
-	initialized bool
-	client      *mongo.Client
-	context     context.Context
-	cancelFunc  context.CancelFunc
+	Log        *logrus.Logger
+	client     *mongo.Client
+	context    context.Context
+	cancelFunc context.CancelFunc
 }
 
 // Init the db
@@ -52,24 +51,17 @@ func (p *MongoDB) Init() {
 	p.client = client
 	p.context = ctx
 	p.cancelFunc = cancel
+}
 
-	if p.initialized {
-		return
-	}
-
+func (p *MongoDB) Seed() {
 	// Force a connection to verify our connection string
-	err = client.Ping(ctx, nil)
+	err := p.client.Ping(p.context, nil)
 	if err != nil {
 		p.Log.Fatalf("Failed to ping cluster: %v", err)
 	}
 
-	p.Log.Info("Connected to MongoDB!")
+	p.Log.Debug("Connected to MongoDB!")
 
-	p.createIndexes()
-	p.initialized = true
-}
-
-func (p *MongoDB) createIndexes() {
 	p.Log.Println("Creating collection indexes...")
 	monitorIndexes := []mongo.IndexModel{
 		{
@@ -126,7 +118,7 @@ func (p *MongoDB) createIndexes() {
 			UpdatedAt: time.Now().UTC(),
 		},
 	}
-	_, err := roleCollection.InsertOne(p.context, adminsRole)
+	_, err = roleCollection.InsertOne(p.context, adminsRole)
 	if err != nil {
 		p.Log.Error(err)
 	} else {

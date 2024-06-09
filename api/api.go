@@ -22,6 +22,10 @@ func Create(db storage.Provider, log *logr.Logger, statusUpdateJob *StatusUpdate
 
 // Serve the API
 func (api *API) Serve() *gin.Engine {
+	api.db.Init()
+	api.db.Seed()
+	api.db.Free()
+
 	if api.log.Level == logr.DebugLevel {
 		gin.SetMode(gin.DebugMode)
 	} else {

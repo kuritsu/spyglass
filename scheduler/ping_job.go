@@ -1,11 +1,14 @@
 package scheduler
 
+import "github.com/kuritsu/spyglass/api/storage"
+
 func ping_job(s *SchedulerProcess) {
-	s.Db.Init()
-	defer s.Db.Free()
-	sch, err := s.Db.UpdateScheduler(s.Sch)
+	db := storage.CreateProviderFromConf(s.Log)
+	db.Init()
+	defer db.Free()
+	sch, err := db.UpdateScheduler(s.Sch)
 	if err != nil {
-		s.Log.Error(err.Error())
+		s.Log.Error("[ping_job] ", err.Error())
 		return
 	}
 	s.Sch = sch

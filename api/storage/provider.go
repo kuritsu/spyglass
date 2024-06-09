@@ -9,6 +9,7 @@ import (
 // Provider for storage
 type Provider interface {
 	Init()
+	Seed()
 	Free()
 
 	CreateUserToken(*types.User, time.Time) (string, error)
