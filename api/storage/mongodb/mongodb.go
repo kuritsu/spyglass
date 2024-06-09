@@ -91,8 +91,7 @@ func (p *MongoDB) createIndexes() {
 
 	jobIndexes := []mongo.IndexModel{
 		{
-			Keys:    bson.M{"id": 1},
-			Options: options.Index().SetUnique(true),
+			Keys: bson.M{"label": 1, "targetId": 2},
 		},
 	}
 	p.client.Database("spyglass").Collection("Jobs").
@@ -100,8 +99,7 @@ func (p *MongoDB) createIndexes() {
 
 	schedulerIndexes := []mongo.IndexModel{
 		{
-			Keys:    bson.M{"id": 1},
-			Options: options.Index().SetUnique(true),
+			Keys: bson.M{"label": 1},
 		},
 	}
 	p.client.Database("spyglass").Collection("Schedulers").

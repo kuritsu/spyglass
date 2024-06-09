@@ -32,7 +32,7 @@ func MonitorFlags() *TargetOptions {
 	result.actions = make(map[string]Command)
 	result.actions["add"] = MonitorAddActionFlags(result.flagSet)
 	// result.actions["get"] = TargetGetActionFlags(result.flagSet)
-	// result.actions["list"] = TargetListActionFlags(result.flagSet)
+	result.actions["list"] = MonitorListActionFlags(result.flagSet)
 	// result.actions["rm"] = TargetRemoveActionFlags(result.flagSet)
 	result.flagSet.Usage = func() {
 		args := result.flagSet.Args()

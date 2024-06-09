@@ -35,8 +35,8 @@ type MonitorJobDefinition struct {
 
 // Monitor is a monitor definition to be assigned to targets
 type Monitor struct {
-	ID          string                `json:"id" binding:"required" yaml:"id,label"`
-	Tag         string                `json:"tag" binding:"required" yaml:"tag"`
+	ID          string                `json:"id" binding:"required" yaml:"id"`
+	Label       string                `json:"label" binding:"required" yaml:"label"`
 	Schedule    string                `json:"schedule" binding:"required" yaml:"schedule"`
 	Description string                `json:"description,omitempty" bson:",omitempty" yaml:"description"`
 	Definition  *MonitorJobDefinition `json:"definition" binding:"required" yaml:"definition"`

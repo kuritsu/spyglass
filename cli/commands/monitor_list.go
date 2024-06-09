@@ -7,41 +7,33 @@ import (
 	"github.com/kuritsu/spyglass/cli/runner"
 )
 
-type PaginatedAction struct {
-	format    string
-	pageIndex int
-	pageSize  int
-}
-
-// TargetListAction represents the list action of targets.
-type TargetListAction struct {
+// MonitorListAction represents the list action of monitors.
+type MonitorListAction struct {
 	flagSet *flag.FlagSet
 	c       *CommandLineContext
-	filter  string
 	PaginatedAction
 }
 
 // GetFlags for the current command.
-func (o *TargetListAction) GetFlags() *flag.FlagSet {
+func (o *MonitorListAction) GetFlags() *flag.FlagSet {
 	return o.flagSet
 }
 
 // Description for the current command.
-func (o *TargetListAction) Description() string {
-	return "Paginated list of targets."
+func (o *MonitorListAction) Description() string {
+	return "List monitors."
 }
 
-// TargetListActionFlags obtains flags for target list action
-func TargetListActionFlags(parentFs *flag.FlagSet) *TargetListAction {
-	result := TargetListAction{}
+// MonitorListActionFlags obtains flags for target list action
+func MonitorListActionFlags(parentFs *flag.FlagSet) *MonitorListAction {
+	result := MonitorListAction{}
 	result.flagSet = flag.NewFlagSet("list", flag.ContinueOnError)
-	result.flagSet.StringVar(&result.filter, "f", "", "Substring the target IDs must contain.")
 	result.flagSet.StringVar(&result.format, "o", "json", "Output format. Can be json.")
 	result.flagSet.IntVar(&result.pageIndex, "pi", 0, "Page index.")
 	result.flagSet.IntVar(&result.pageSize, "ps", 10, "Page size.")
 	result.flagSet.Usage = func() {
 		fmt.Println("Usage:")
-		fmt.Println("  spyglass target [global-flags] list [flags]")
+		fmt.Println("  spyglass monitor [global-flags] list [flags]")
 		fmt.Println("\nFlags:")
 		result.flagSet.PrintDefaults()
 		fmt.Println("\nGlobal Flags:")
@@ -51,15 +43,15 @@ func TargetListActionFlags(parentFs *flag.FlagSet) *TargetListAction {
 }
 
 // Apply the current action.
-func (o *TargetListAction) Apply(c *CommandLineContext) runner.Runner {
+func (o *MonitorListAction) Apply(c *CommandLineContext) runner.Runner {
 	c.Log.Debug("Apply target list...")
-	result, err := c.Caller.ListTargets(o.filter, o.pageIndex, o.pageSize)
+	result, err := c.Caller.ListMonitors(o.pageIndex, o.pageSize)
 	if err != nil {
 		return &runner.ExitError{Error: err, Logger: c.Log}
 	}
 	switch o.format {
 	case "json":
-		c.Log.Debug("Displaying targets as json...")
+		c.Log.Debug("Displaying monitors as json...")
 		DisplayJson(result)
 	}
 	return nil

@@ -6,7 +6,7 @@
 id: docker-monitor
 schedule: "*/10 * * * *"
 description: Simple docker hour monitor. If hour = 0, status is 0, if hour = 23, status is 100
-tag: docker
+label: docker
 definition:
   docker:
     image: spyglass:ubuntu22
