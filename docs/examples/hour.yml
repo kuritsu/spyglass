@@ -1,0 +1,6 @@
+id: hour
+description: Current hour progress
+status: 0
+statusDescription: Progress of the current hour
+monitor:
+  monitorId: shell-monitor

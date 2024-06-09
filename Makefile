@@ -1,6 +1,7 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := build
 export MONGODB_CONNECTIONSTRING ?= mongodb://spyglass:spyglass@localhost:27017/spyglass?authSource=admin
+LABEL ?= bash
 
 .PHONY: api build mod test db ui
 
@@ -27,7 +28,7 @@ api: build
 	./spyglass server -v DEBUG
 
 sch:
-	./spyglass scheduler -v DEBUG -l shell
+	./spyglass scheduler -v DEBUG -l $(LABEL)
 
 ui-build:
 	cd ui; ember build --environment=production

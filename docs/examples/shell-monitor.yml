@@ -1,5 +1,5 @@
 id: shell-monitor
-schedule: "*/10 * * * *"
+schedule: "* * * * *"
 description: Simple minute monitor. If minute = 0, status is 0, if minute = 59, status is 100
 label: bash
 definition:

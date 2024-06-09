@@ -22,7 +22,16 @@ func (p *MongoDB) InsertJob(job *types.Job) (*types.Job, error) {
 }
 
 func (p *MongoDB) UpdateJob(job *types.Job) (*types.Job, error) {
-	return nil, nil
+	col := p.client.Database("spyglass").Collection("Jobs")
+	job.UpdatedAt = time.Now().UTC()
+
+	res := col.FindOneAndUpdate(p.context, bson.M{"id": job.ID},
+		bson.D{{"$set", job}})
+	if res.Err() != nil {
+		p.Log.Error(res.Err().Error())
+		return nil, fmt.Errorf("Error updating job")
+	}
+	return job, nil
 }
 
 func (p *MongoDB) GetAllJobsFor(label string) ([]*types.Job, error) {

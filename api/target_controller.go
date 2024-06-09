@@ -169,7 +169,8 @@ func (t *TargetController) Post(c *gin.Context) {
 		})
 		return
 	}
-	if perr := t.monitorMissing(target.Monitor); perr != nil {
+	monitor, perr := t.monitorMissing(target.Monitor)
+	if perr != nil {
 		c.JSON(perr.Code, gin.H{
 			"message": perr.Error(),
 		})
@@ -190,6 +191,17 @@ func (t *TargetController) Post(c *gin.Context) {
 			"message": "Invalid operation. Try again.",
 		})
 		return
+	}
+	if monitor != nil {
+		job := &types.Job{TargetId: target.ID, Label: monitor.Label}
+		job, err = t.db.InsertJob(job)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Job could not be created.",
+			})
+			return
+		}
+		t.log.Debug("Job ", job.ID, " created.")
 	}
 	c.JSON(http.StatusCreated, target)
 }
@@ -382,21 +394,21 @@ func (t *TargetController) parentMissing(childID string) (*types.Target, *ErrorW
 	return parent, nil
 }
 
-func (t *TargetController) monitorMissing(monitorRef *types.MonitorRef) *ErrorWithCode {
+func (t *TargetController) monitorMissing(monitorRef *types.MonitorRef) (*types.Monitor, *ErrorWithCode) {
 	if monitorRef == nil {
-		return nil
+		return nil, nil
 	}
 	monitor, err := t.db.GetMonitorByID(monitorRef.MonitorID)
 	if err != nil {
 		t.log.Error(err)
-		return &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}
+		return nil, &ErrorWithCode{Message: "Invalid operation. Try again later", Code: http.StatusInternalServerError}
 	}
 	if monitor == nil {
 		msg := fmt.Sprintf("Monitor does not exist. (%s)", monitorRef.MonitorID)
 		t.log.Println(msg)
-		return &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
+		return nil, &ErrorWithCode{Message: msg, Code: http.StatusBadRequest}
 	}
-	return nil
+	return monitor, nil
 }
 
 func (t *TargetController) ensurePermissionsRecursive(target *types.Target, user *types.User) {

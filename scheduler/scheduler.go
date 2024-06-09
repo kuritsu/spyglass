@@ -25,13 +25,13 @@ type SchedulerProcess struct {
 	Sch      *types.Scheduler
 	Jobs     []*types.Job
 	cron     gocron.Scheduler
-	tasks    map[string]gocron.Task
+	tasks    map[string]gocron.Job
 	signalCh chan os.Signal
 	exitCh   chan int
 }
 
 func Create(db storage.Provider, log *logr.Logger) Scheduler {
-	return &SchedulerProcess{Db: db, Log: log}
+	return &SchedulerProcess{Db: db, Log: log, tasks: make(map[string]gocron.Job)}
 }
 
 func (s *SchedulerProcess) Run(label string) {
@@ -136,11 +136,21 @@ func (s *SchedulerProcess) StartTask(job *types.Job) {
 		s.Log.Error("[StartTask] Invalid monitor.")
 		return
 	}
-	_, err = s.cron.NewJob(
+	s.Log.Debug("[StartTask] Starting job ", job.ID, " with cron ", m.Schedule)
+	cronjob, err := s.cron.NewJob(
 		gocron.CronJob(m.Schedule, false),
 		gocron.NewTask(runtime, s, job, m, t.Monitor.Params),
 	)
 	if err != nil {
 		s.Log.Error("[StartTask] Could not start job ", job.ID, ". ", err.Error())
+		return
 	}
+	s.tasks[job.ID] = cronjob
+	job.SchedulerId = s.Sch.ID
+	job, err = s.Db.UpdateJob(job)
+	if err != nil {
+		s.Log.Error("[StartTask] Could not update job ", job.ID, ". ", err.Error())
+		return
+	}
+	s.Log.Debug("Job ", job.ID, " updated.")
 }
