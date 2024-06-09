@@ -34,6 +34,7 @@ type Provider interface {
 	Register(string, string) (*types.User, error)
 	UpdateJob(*types.Job) (*types.Job, error)
 	UpdateMonitor(*types.Monitor, *types.Monitor) (*types.Monitor, error)
+	UpdateScheduler(*types.Scheduler) (*types.Scheduler, error)
 	UpdateTarget(*types.Target, *types.Target, bool) (*types.Target, error)
 	UpdateTargetStatus(*types.Target, *types.TargetPatch) (*types.Target, error)
 	UpdateUser(*types.User, string, string) error

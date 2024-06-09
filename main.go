@@ -15,6 +15,7 @@ import (
 	"github.com/kuritsu/spyglass/cli"
 	"github.com/kuritsu/spyglass/cli/commands"
 	"github.com/kuritsu/spyglass/client"
+	"github.com/kuritsu/spyglass/scheduler"
 	"go.uber.org/fx"
 )
 
@@ -76,6 +77,7 @@ func main() {
 			createEmbedRes,
 			api.NewStatusUpdateJob,
 			api.Create,
+			scheduler.Create,
 		),
 		fx.Invoke(processArgs),
 	)

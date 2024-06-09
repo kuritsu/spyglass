@@ -3,7 +3,7 @@ package types
 import "time"
 
 type Job struct {
-	Id          string            `json:"id"`
+	ID          string            `json:"id"`
 	TargetId    string            `json:"targetId"`
 	Label       string            `json:"label"`
 	Props       map[string]string `json:"props"`

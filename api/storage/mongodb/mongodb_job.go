@@ -10,7 +10,7 @@ import (
 )
 
 func (p *MongoDB) InsertJob(job *types.Job) (*types.Job, error) {
-	job.Id = uuid.NewString()
+	job.ID = uuid.NewString()
 	job.UpdatedAt = time.Now().UTC()
 
 	_, err := p.client.Database("spyglass").Collection("Jobs").InsertOne(p.context, job)

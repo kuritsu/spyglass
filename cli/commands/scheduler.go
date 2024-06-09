@@ -33,5 +33,6 @@ func SchedulerOptionsFlags() *SchedulerOptions {
 // Apply the command.
 func (o *SchedulerOptions) Apply(c *CommandLineContext) runner.Runner {
 	c.Log.Debug("Executing Scheduler process.")
+	c.Sch.Run(o.Label)
 	return nil
 }

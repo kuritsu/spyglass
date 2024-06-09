@@ -25,13 +25,26 @@ func (p *MongoDB) GetAllSchedulersFor(label string) ([]*types.Scheduler, error) 
 }
 
 func (p *MongoDB) InsertScheduler(scheduler *types.Scheduler) (*types.Scheduler, error) {
-	scheduler.Id = uuid.NewString()
+	scheduler.ID = uuid.NewString()
 	scheduler.LastPing = time.Now().UTC()
 
 	_, err := p.client.Database("spyglass").Collection("Schedulers").InsertOne(p.context, scheduler)
 	if err != nil {
 		p.Log.Error(err)
 		return nil, fmt.Errorf("Error creating scheduler")
+	}
+	return scheduler, nil
+}
+
+func (p *MongoDB) UpdateScheduler(scheduler *types.Scheduler) (*types.Scheduler, error) {
+	col := p.client.Database("spyglass").Collection("Schedulers")
+	scheduler.LastPing = time.Now().UTC()
+
+	res := col.FindOneAndUpdate(p.context, bson.M{"id": scheduler.ID},
+		bson.D{{"$set", scheduler}})
+	if res.Err() != nil {
+		p.Log.Error(res.Err().Error())
+		return nil, fmt.Errorf("Error updating scheduler")
 	}
 	return scheduler, nil
 }
