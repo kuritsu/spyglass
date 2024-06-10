@@ -21,8 +21,9 @@ type AWSJobDefinition struct {
 
 // ShellDefinition is a Shell command definition
 type ShellJobDefinition struct {
-	Command string            `json:"command,omitempty" bson:",omitempty" yaml:"command"`
-	Env     map[string]string `json:"env,omitempty" bson:",omitempty" yaml:"env"`
+	Command    string            `json:"command,omitempty" bson:",omitempty" yaml:"command"`
+	Executable string            `json:"executable,omitempty" bson:",omitempty" yaml:"executable"`
+	Env        map[string]string `json:"env,omitempty" bson:",omitempty" yaml:"env"`
 }
 
 // MonitorJobDefinition is a definition of a monitor

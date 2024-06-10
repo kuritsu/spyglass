@@ -4,6 +4,7 @@ description: Simple minute monitor. If minute = 0, status is 0, if minute = 59, 
 label: bash
 definition:
   shell:
+    executable: C:\Program Files\Git\bin\bash.exe
     command: |
       #!/bin/bash
       minute=`date +%M`
