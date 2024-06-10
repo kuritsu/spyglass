@@ -8,6 +8,6 @@ definition:
     command: |
       #!/bin/bash
       minute=`date +%M`
-      percent=$(( $minute * 100 / 60 ))
+      percent=$(( $minute * 100 / 59 ))
       cd /c/Users/kurit/go/src/github.com/kuritsu/spyglass/
       ./spyglass target update-status -id $TARGET_ID -s $percent -d "Automatic using shell-monitor."

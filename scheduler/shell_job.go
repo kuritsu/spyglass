@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/kuritsu/spyglass/api/types"
 )
@@ -25,12 +26,12 @@ func shell_job(s *SchedulerProcess, job *types.Job, monitor *types.Monitor, para
 	for k, v := range params {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%v=%v", k, v))
 	}
-	s.Log.Info("[shell_job] === Output start. Job ", job.ID, " ===")
+	s.Log.Info("[shell_job] === Output start. Job ", job.ID, " ", time.Now(), " ===")
 	stdout, err := cmd.Output()
 	if err != nil {
 		s.Log.Error(err.Error())
 	}
 	fmt.Println(string(stdout))
-	s.Log.Info("[shell_job] === Output end. Job ", job.ID, " ===")
+	s.Log.Info("[shell_job] === Output end.   Job ", job.ID, " ", time.Now(), " ===")
 	s.Log.Debug("[shell_job] Stopped shell job ", job.ID)
 }
