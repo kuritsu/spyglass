@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"os"
+	"os/signal"
 	"syscall"
 	"time"
 
@@ -39,7 +40,8 @@ func (s *SchedulerProcess) Run(label string) {
 	s.Label = label
 	s.InitDb()
 	s.CreateInstance()
-	s.signalCh = make(chan os.Signal, 2)
+	s.signalCh = make(chan os.Signal, 1)
+	signal.Notify(s.signalCh, os.Interrupt, syscall.SIGTERM)
 	go s.HandleSignals()
 	s.cron, err = gocron.NewScheduler()
 	if err != nil {
@@ -49,18 +51,21 @@ func (s *SchedulerProcess) Run(label string) {
 	s.AddSchedulerJobs()
 	s.cron.Start()
 	<-s.exitCh
-	err = s.cron.Shutdown()
-	if err != nil {
-		s.Log.Error(err)
-		return
-	}
-	s.Log.Info("Scheduler ", s.Sch.ID, " successfully stopped.")
 }
 
 func (s *SchedulerProcess) InitDb() {
 	s.Db.Init()
 	s.Db.Seed()
 	s.Db.Free()
+}
+
+func (s *SchedulerProcess) Free() {
+	err := s.cron.Shutdown()
+	if err != nil {
+		s.Log.Error(err)
+		return
+	}
+	s.Log.Info("Scheduler ", s.Sch.ID, " successfully stopped.")
 }
 
 func (s *SchedulerProcess) CreateInstance() {
@@ -97,11 +102,9 @@ func (s *SchedulerProcess) AddSchedulerJobs() {
 
 func (s *SchedulerProcess) HandleSignals() {
 	s.Log.Debug("Listening for signals...")
-	sig := <-s.signalCh
-	switch sig {
-	case os.Interrupt, syscall.SIGTERM:
-		s.exitCh <- 1
-	}
+	<-s.signalCh
+	s.Free()
+	os.Exit(1)
 }
 
 func (s *SchedulerProcess) RefreshJobs() {
