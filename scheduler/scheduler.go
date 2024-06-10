@@ -84,19 +84,22 @@ func (s *SchedulerProcess) CreateInstance() {
 }
 
 func (s *SchedulerProcess) AddSchedulerJobs() {
+	s.addJob(ping_job, 1*time.Minute)
+	s.addJob(get_job, 1*time.Minute)
+	s.addJob(clean_job, 5*time.Minute)
+}
+
+func (s *SchedulerProcess) addJob(function any, duration time.Duration) {
 	_, err := s.cron.NewJob(
-		gocron.DurationJob(1*time.Minute),
-		gocron.NewTask(ping_job, s),
+		gocron.DurationJob(duration),
+		gocron.NewTask(function, s),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
+		gocron.WithStartAt(gocron.WithStartImmediately()),
 	)
 	if err != nil {
 		s.Log.Error(err.Error())
-	}
-	_, err = s.cron.NewJob(
-		gocron.DurationJob(1*time.Minute),
-		gocron.NewTask(get_job, s),
-	)
-	if err != nil {
-		s.Log.Error(err.Error())
+		os.Exit(1)
+		return
 	}
 }
 
@@ -143,6 +146,7 @@ func (s *SchedulerProcess) StartTask(job *types.Job) {
 	cronjob, err := s.cron.NewJob(
 		gocron.CronJob(m.Schedule, false),
 		gocron.NewTask(runtime, s, job, m, t.Monitor.Params),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
 		s.Log.Error("[StartTask] Could not start job ", job.ID, ". ", err.Error())

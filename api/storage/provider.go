@@ -16,6 +16,7 @@ type Provider interface {
 	DeleteJob(id string) error
 	DeleteScheduler(id string) error
 	DeleteTarget(id string) (int, error)
+	GetAllInactiveSchedulers() ([]*types.Scheduler, error)
 	GetAllJobsFor(label string) ([]*types.Job, error)
 	GetAllMonitors(int64, int64, string) ([]*types.Monitor, error)
 	GetAllRoles(int64, int64) ([]*types.Role, error)
@@ -33,6 +34,7 @@ type Provider interface {
 	InsertTarget(*types.Target) (*types.Target, error)
 	Login(string, string) (*types.User, error)
 	Register(string, string) (*types.User, error)
+	UnassignJobs(schedulerId string) (int64, error)
 	UpdateJob(*types.Job) (*types.Job, error)
 	UpdateMonitor(*types.Monitor, *types.Monitor) (*types.Monitor, error)
 	UpdateScheduler(*types.Scheduler) (*types.Scheduler, error)

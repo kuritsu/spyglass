@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kuritsu/spyglass/api/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (p *MongoDB) GetAllSchedulersFor(label string) ([]*types.Scheduler, error) {
@@ -56,4 +57,20 @@ func (p *MongoDB) DeleteScheduler(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (p *MongoDB) GetAllInactiveSchedulers() ([]*types.Scheduler, error) {
+	col := p.client.Database("spyglass").Collection("Schedulers")
+	m5 := time.Now().Add(-5 * time.Minute)
+	expr := bson.M{"lastping": bson.M{"$lt": primitive.NewDateTimeFromTime(m5)}}
+	cursor, err := col.Find(p.context, expr)
+	if err != nil {
+		return nil, err
+	}
+	var schedulers []*types.Scheduler
+	err = cursor.All(p.context, &schedulers)
+	if err != nil {
+		return nil, err
+	}
+	return schedulers, nil
 }

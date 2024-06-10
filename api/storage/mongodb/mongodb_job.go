@@ -57,3 +57,15 @@ func (p *MongoDB) DeleteJob(id string) error {
 	}
 	return nil
 }
+
+func (p *MongoDB) UnassignJobs(schedulerId string) (int64, error) {
+	col := p.client.Database("spyglass").Collection("Jobs")
+
+	res, err := col.UpdateMany(p.context, bson.M{"schedulerid": schedulerId},
+		bson.D{{"$set", bson.M{"schedulerId": nil}}})
+	if err != nil {
+		p.Log.Error(err.Error())
+		return 0, fmt.Errorf("Error updating jobs")
+	}
+	return res.MatchedCount, nil
+}
